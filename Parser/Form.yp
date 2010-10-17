@@ -1,0 +1,246 @@
+/* Grammar for FORM */
+/* TODO: - implement FORM special variables [...]
+   	 - allow whitespace to separate function arguments
+	 - FORM special functions (e.g. d_())
+	 - dollar variables?
+*/
+
+%{
+#use Data::Dump;
+%}
+
+%token NUMBER
+%token SYMBOL		
+
+%left ','
+%nonassoc '='
+%left '+' '-'
+%left '*' '/'
+%left '^'
+%nonassoc '.'
+
+%%
+
+input: /* empty */
+       | term	
+;
+
+term:	symbol
+	| number
+	| ellipsis
+	| equal
+	| sum | diff | product | quot | exp | sp
+	| bracket | abracket
+	| function 
+	| spattern | cpattern
+	| index | coefficient
+;
+
+symbol:	SYMBOL	{Node->new($_[1],'symbol')}
+;
+
+
+number: NUMBER 	{Node->new($_[1],'number')}
+;
+
+ellipsis: ELLIPSIS {Node->new($_[1],'ellipsis')}
+;
+
+equal:		term '=' term	{Node->new($_[2],'equal',$_[1],$_[3])}
+;
+
+
+sum:		'+' term			{Node->new($_[1],'sum',$_[2])}
+		| term '+' term 		{Node->new($_[2],'sum',$_[1],$_[3])}
+;
+
+diff:		'-' term			{Node->new($_[1],'diff',$_[2])}
+		| term '-' term			{Node->new($_[2],'diff',$_[1],$_[3])}
+;
+
+product:	term '*' term			{Node->new($_[2],'product',$_[1],$_[3])}
+;
+
+quot:		term '/' term			{Node->new($_[2],'quot',$_[1],$_[3])}
+;
+
+exp:		term '^' term			{Node->new($_[2],'exp',$_[1],$_[3])}
+;
+
+sp:		term '.' term			{Node->new($_[2],'sp',$_[1],$_[3])}
+;
+
+bracket: '(' term ')'	{Node->new($_[1],'bracket',$_[2])}
+;
+
+abracket: '<' term '>'	{Node->new($_[1],'angular_bracket',$_[2])}
+;
+
+
+/* now comes the sick part of FORM syntax */
+function:	symbol '(' ')'			{Node->new($_[1],'function')}
+		| symbol '(' term ')'		{Node->new($_[1],'function',$_[3])}
+ 	  	| symbol '(' fsequence ')'	{Node->new($_[1],'function',$_[3])}
+ 	  	| symbol '(' mpattern ')'	{Node->new($_[1],'function',$_[3])}
+;
+
+/* this definition is a bit to permissive; actually form will not allow for an empty list
+   {} or a one-element list {a} because it would be eliminated by the preprocessor
+   maybe we can kill this via the parser at some point
+*/
+list:		 '{' '}'			{Node->new($_[1],'list')}
+		 | '{' lsequence '}'		{Node->new($_[1],'list',$_[2])}
+		 | '{' term '}'		{Node->new($_[1],'list',$_[2])}
+;
+
+/* sequences work differently for functions and for sets;
+   this is for functions:
+   there can be as many ',' as we want, but the last part _has_
+   to be a term
+   consecutive ',' count as an implicit argument of zero: e.g f(,,1,,2)=f(0,0,1,0,2)
+   to make things more difficult, whitespaces are legal separators, too
+   however, they do _not_ work like commas
+   in total: if f(n,m) is the number of 'effective' commas given n whitespaces and m commas, then
+      f(0,0)=0;
+      f(1,0)=1;
+      f(n,m) with m>0 =m;
+   crazy.
+   For the moment, this does not work and whitespaces are just ignored
+*/
+
+fsequence: 
+	    ',' term {
+	       	    my $zero=Node->new('0','number');
+	       	    Node->new($_[1],'sequence',$zero,$_[2])
+	   	    }
+	   |  term ',' term {Node->new($_[2],'sequence',$_[1],$_[3])}
+	   | ',' fsequence {
+	   	       	   my $zero=Node->new('0','number');
+	     	 	   Node->new($_[1],'sequence',$zero,$_[2])
+	     		   }
+	   | term ',' fsequence {Node->new($_[2],'sequence',$_[1],$_[3])}
+
+;
+
+/*  list sequence: basically, can have arbitrary many ',' in any position 
+    each ',' corresponds to a ' ' i.e. has no meaning other than separating list entries (afaik)
+    we _will_ have to replace whitespaces with ',' in a kind of preprocessor (in sub parse?) inside
+    curly brackets for this to work properly 
+    the preprocessor will produce a usual list (treated here)
+*/
+
+lsequence: 
+	    term ',' lsequence {Node->new($_[2],'sequence',$_[1],$_[3])}
+	   | term ',' term {Node->new($_[2],'sequence',$_[1],$_[3])}
+;
+
+spattern: symbol '?' {Node->new($_[2],'single_pattern',$_[1])}
+;
+
+mpattern: '?' symbol {Node->new($_[1],'multi_pattern',$_[2])}
+;
+
+
+
+/* list indices */
+index:	list '[' term ']'  {Node->new('[','index',$_[1],$_[3])}
+;
+coefficient:  symbol '[' term ']'  {Node->new('[','coefficient',$_[1],$_[3])}
+;
+
+/* not in list */
+not: '!' list {Node->new('!','not',$_[2])}
+;
+
+/* conditional patterns */
+cpattern: spattern list {Node->new('','cond_pattern',$_[1], $_[2])}
+	  | spattern index {Node->new('','cond_pattern',$_[1], $_[2])}
+	  | spattern not {Node->new('','cond_pattern',$_[1], $_[2])}
+;
+
+%%
+
+my %pair=(
+    '[' => ']',
+    "{" => "}"
+);
+
+
+#find the matching closing bracket for $_[1] in $_[0]
+sub find_matching_bracket{
+    my $text=shift;
+    my $pos = shift;
+    defined $pos or $pos=0;
+    my $bracket=substr($text,$pos,1);
+    my $anti_bracket=$pair{$bracket};
+    defined $anti_bracket or die "'$bracket' is not a bracket";
+    my $count=1;
+    for(++$pos;$pos<length($text);++$pos){
+    	   if(substr($text,$pos,1) eq $bracket){++$count; }
+    	   elsif(substr($text,$pos,1) eq $anti_bracket){--$count; }
+	   $count or last;
+    }
+    return undef if $pos==length($text);
+    return $pos;   
+}
+
+sub _error {
+    if(exists $_[0]->YYData->{ERRMSG}) {
+	print $_[0]->YYData->{ERRMSG};
+        delete $_[0]->YYData->{ERRMSG};
+        return;
+    };	
+    print "Syntax error.\n";
+}
+
+sub _lexer {
+    my $parser =shift;
+    
+    return('',undef) unless $parser->YYData->{INPUT};
+    #TODO: convert to internal format (i.g. d_ -> delta)
+    for ($parser->YYData->{INPUT}) {
+	return('NUMBER',$1) if s/^(\d+)//; 
+	if(s/^([[:alpha:]][[:alnum:]]*_?)//){
+#	   return $special_sym{$1} if defined $special_sym{$1};
+	   return ('SYMBOL',$1);
+	}
+	# TODO:
+	# form symbols don't work atm, it is difficult to
+	# distinguish them from indices
+	# if(/^([\['`])/){
+	# 	  my $end=find_matching_bracket($_,$1);
+	# 	  defined $end or die "Unmatched bracket";
+	# 	  my $symbol=substr($_,0,$end+1);
+	# 	  substr($_,0,$end+1)='';
+	# 	  return('SYMBOL',$symbol);
+	# }
+	return('ELLIPSIS',$1) if s/^(\.{3})//;
+        return($1,$1) if s/^(.)//s;
+    }
+}
+
+sub parse {
+    my $self=shift;
+    my $data=shift;
+    for ($data){
+    # we have to do some nasty things to emulate form treatment of
+    # whitespace vs. ,
+      	
+	# in curly brackets, simply treat whitespace as a ','
+	# and eliminate superfluous ','
+	for(my $pos=0;($pos=index($_,'{',$pos))>-1;++$pos){
+	    my $end;
+	    $end=find_matching_bracket($_,$pos) 
+		or die "Unmatched opening bracket '(' HERE >>".substr($_,$pos-2,5)."<<HERE";
+	    substr($_,$pos+1,$end-$pos-1) =~ s/[\s,]+/,/g;
+	    $end=find_matching_bracket($_,$pos) 
+	    	or die "Internal error";
+	    substr($_,$pos+1,$end-$pos-1) =~ s/(^,|,$)//g
+	}
+	s/\s+//g;
+	print;
+	$self->YYData->{INPUT} = $_
+    }
+    $self->YYParse( yylex => \&_lexer, yyerror => \&_error );
+}
+

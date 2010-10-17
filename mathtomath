@@ -1,0 +1,70 @@
+#!/usr/bin/perl
+# ask Steffen:
+# -recursive methods?
+# - input hinting (please enter ...)
+# - run time including modules properly
+
+use 5.10.1;
+use warnings;
+use strict;
+use Data::Dump;
+use Expression;
+use Getopt::Long;
+
+my $version;
+my $version_number=0.0;
+
+my $help;
+my $help_text='TODO';
+
+our $verbose;
+our $strict;
+
+my $in_format='Generic';
+my $out_format='Generic';
+
+GetOptions( 'informat|if=s' => \$in_format,
+	    'outformats|of=s' => \$out_format,
+	    'strict' => \$strict,
+	    'verbose'=> \$verbose,
+	    'help'=> \$help,
+	    'version'=> \$version
+    );
+my @out_formats=split /,/,$out_format;
+@out_formats = map {$_.='_out';ucfirst} @out_formats;
+$in_format=ucfirst $in_format;
+
+if($version){
+    say 'mathtomath version $version_number';
+    exit;
+}
+
+if($help){
+    say $help_text;
+    exit;
+}
+
+# we decide on our formats at run time,
+# so we require require and don't use use
+#TODO: multiple output formats
+eval(require "Parser/$in_format.pm" );
+foreach my $out_format (@out_formats){
+    eval(require $out_format.'.pm');
+}
+
+{
+    local $/=undef;
+    $_=<>;
+}
+
+#parse syntax tree
+my $parser=new $in_format;
+my $tree=$parser->parse($_)or exit(1);
+
+#create output in the desired format
+foreach my $out_format (@out_formats){
+    dd($tree);
+    my $out_str=${out_format}->to_string($tree);
+    say $out_str;
+}
+
