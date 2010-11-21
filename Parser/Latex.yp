@@ -1,6 +1,7 @@
 /* This is the grammar for general mathematical formulas */
 %{
 #use Data::Dump;
+use feature "state";
 #special symbols
 my %special_symbols=(
 	'\alpha' => 'alpha',
@@ -50,7 +51,11 @@ my %special_symbols=(
 	'\Phi' => 'Phi',
 	'\Chi' => 'Chi',
 	'\Psi' => 'Psi',
-	'\Omega' => 'Omega'
+	'\Omega' => 'Omega',
+	'\log' => 'log',
+	'\sin' => 'sin',
+	'\cos' => 'cos',
+	'\tan' => 'tan'
 );
 
 %}
@@ -58,98 +63,137 @@ my %special_symbols=(
 %token DIGIT
 %token ALPHA
 %token CMD
+%token CBO # \{
+%token CBC # \}
 
-%left ',' ';'
+%nonassoc OVER
+%left ','
+%left '&'
+%left LINEBREAK # \\
 %left '=' '>' '<' ID NE GE LE
 %left '+' '-'
-%left MULT '*' '/' # '*' '\*' '\cdot' \times'
-%nonassoc '^'
-%nonassoc '_'
+%left MULTI '/'
 %nonassoc '.'
-%nonassoc WILDCARD
-%left CBO CBC # \{ \}
-%left JOIN # join several tokens to a number / symbol
-%left OVER FRAC
+%nonassoc '^' '_'
+%left JOIN
+%left FRAC
 %%
 
 input: /* empty */
        | term	
 ;
 
-term:	symbol
-	| number
-	| relation 
+term:	number {Expression->new(name =>$_[1],is => 'number')}
+	| symbol {Expression->new(name =>$_[1],is => 'symbol')}
+	| cmd
 	| operation
+	| relation
+	| function
 	| bracket
-	| function | block
-	| wildcard
+	| matrix
+	| align
 ;
 
-symbol:	CMD	{
-		my $symbol=$_[1];
-		#special characters
-		if(defined $special_symbols{$symbol}){
-			   $symbol="**$special_symbols{$symbol}**";		
-		}
-		Expression->new(name =>$symbol,is => 'symbol')
-		}
-	| ALPHA	{$_[1]}
+
+number: DIGIT
+	| number DIGIT %prec JOIN {$_[1].$_[2]}
+	| number '.' %prec JOIN {$_[1].'.'}
+;
+
+symbol: ALPHA
 	| symbol ALPHA %prec JOIN {$_[1].$_[2]}
 ;
 
-
-number: DIGIT {$_[1]}
-	| number DIGIT %prec JOIN {$_[1].$_[2]}	
-	| number '.' DIGIT  {$_[1].'.'.$_[2]}	
+cmd: CMD {Expression->new(name =>$_[1],is => 'symbol')}
 ;
 
-#{Expression->new(name =>$_[1],is => 'number')}
+atom: DIGIT {Expression->new(name =>$_[1],is => 'number')}
+      | ALPHA {Expression->new(name =>$_[1],is => 'symbol')}
+      | cmd
+;
+
+
+argument: atom 
+	  | '{' term '}' {$_[2]}
+;
+
+operation: FRAC argument argument	{Expression->new(name =>'/',is => 'operator',args => [$_[2],$_[3]])}
+	   |     term OVER term 	{Expression->new(name =>'/',is => 'operator',args => [$_[1],$_[3]])}
+	   | '{' term OVER term '}' 	{Expression->new(name =>'/',is => 'operator',args => [$_[2],$_[4]])}
+	   | term '/' term  		{Expression->new(name =>'/',is => 'operator',args => [$_[1],$_[3]])}
+	   | term MULTI term  		{Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[3]])}
+	   | '+' term			{$_[2]}
+	   | term '+' term 		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
+	   | '-' term			{Expression->new(name =>$_[1],is => 'operator',args => [$_[2]])}
+	   | term '-' term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
+	   | term '^' argument		{Expression->new(name =>'^',is => 'operator',args => [$_[1],$_[3]])}
+	   | term '_' argument		{
+	     	      			my $sym=Expression->new(name =>'**subscript**',is => 'symbol');
+					my $args=Expression->new(name =>',',is => 'operator',args=>[$_[1],$_[3]]);
+	     	      			Expression->new(name => ['(',')'],is => 'bracket',args => [$sym,$args])
+					}
+	   |  number bracket %prec MULTI	{
+	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
+	      	     	     	   		Expression->new(name =>'*',is => 'operator',args => [$num,$_[2]])} 
+	   |  number symbol %prec MULTI 	{
+	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
+	      	     	    	  		my $sym=Expression->new(name =>$_[2],is => 'symbol');
+	      	     	    	  		Expression->new(name =>'*',is => 'operator',args => [$num,$sym])
+						} 
+	   |  number cmd %prec MULTI 		{
+	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
+						Expression->new(name =>'*',is => 'operator',args => [$num,$_[2]])
+						} 
+	   |  number function %prec MULTI 	{
+	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
+						Expression->new(name =>'*',is => 'operator',args => [$num,$_[2]])
+						} 
+	   | sequence	      	    		{$_[1]->{name}=';';$_[1]} 
+# 	   | term '.' term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])} 
+#	   | term term %prec MULTI  {Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[2]])}
+;
 
 relation:	term '=' term	{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-		| term ID term	{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-		| term NE term	{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
+		| term ID term	{Expression->new(name =>"==",is => 'operator',args => [$_[1],$_[3]])}
+		| term NE term	{Expression->new(name =>"!=",is => 'operator',args => [$_[1],$_[3]])}
 		| term '>' term	{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term GE term	{Expression->new(name =>'>=',is => 'operator',args => [$_[1],$_[3]])}
 		| term '<' term	{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term LE term	{Expression->new(name =>'<=',is => 'operator',args => [$_[1],$_[3]])}
 ;
 
-
-operation:	'+' term			{$_[2]}
-		| term '+' term 		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-		| '-' term			{Expression->new(name =>$_[1],is => 'operator',args => [$_[2]])}
-		| term '-' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-		| term MULT term		{Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[3]])}
-		| term term		        {Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[2]])}
-		|  number bracket %prec '*'	{Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[2]])} 
-		|  number symbol %prec '*' 	{Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[2]])} 
-		|  number function %prec '*' 	{Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[2]])} 
-		| term '/' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-		| term OVER term		{Expression->new(name =>'/',is => 'operator',args => [$_[1],$_[3]])}
-		| FRAC term term		{Expression->new(name =>'/',is => 'operator',args => [$_[2],$_[3]])}
-		| term '^' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-		| term '.' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-;
-
-bracket: '(' term ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[2]])}
-;
-
-function:	symbol '(' term ')'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
-	  	| symbol '(' sequence ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
+function:	symbol '(' term ')'		{
+		   	      	      	 	my $sym=Expression->new(name =>$_[1],is => 'symbol');
+    	   					Expression->new(name =>['(',')'],is => 'bracket',args => [$sym,$_[3]])
+						}
+		| cmd '(' term ')'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
 #  also support currying
 	  	| function '(' term ')' 	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
 ;
 
-block:		'{' '}'				{Expression->new(name =>['{','}'],is => 'bracket')}
-		| '{' term '}'			{Expression->new(name =>['{','}'],is => 'bracket',args => [$_[2]])}
+bracket:	CBO CBC				{Expression->new(name =>['{','}'],is => 'bracket')}
+		| CBO term CBC			{Expression->new(name =>['{','}'],is => 'bracket',args => [$_[2]])}
+		| '(' term ')'			{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[2]])}
+		| '[' term ']'			{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[2]])}
 ;
 
 sequence: term ',' term {Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-	    | term ',' sequence {Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
+ ;
+matrix: 	BEGMATRIX table ENDMATRIX	{Expression->new(name =>['{','}'],is => 'bracket',args =>[$_[2]])}
 ;
 
-wildcard: symbol WILDCARD {Expression->new(name => $_[2],is => 'operator',args => [$_[1]])}
+table: row
+       | row LINEBREAK row	{
+       	     	       		my @rows;
+				$rows[0]=Expression->new(name =>['{','}'],is => 'bracket',args =>[$_[1]]);
+				$rows[1]=Expression->new(name =>['{','}'],is => 'bracket',args =>[$_[3]]);
+				Expression->new(name =>',',is => 'operator',args =>\@rows)
+				}
 ;
+row:  term
+      | row '&' term	{Expression->new(name =>',',is => 'operator',args =>[$_[1],$_[3]])}
+;
+
 
 %%
 
@@ -163,20 +207,35 @@ sub _error {
 }
 
 sub _lexer {
+    state $in_matrix_env=0;
     my $parser =shift;
     
     return('',undef) unless $parser->YYData->{INPUT};
-
     for ($parser->YYData->{INPUT}) {
+    	#dirty hack here: the parser must never return '&' or '\\'
+    	# unless we are in a matrix environment
+        s/^(&|\\\\)//g unless($in_matrix_env);
 	return('DIGIT',$1) if s/^(\d)//; 
 	return('ALPHA',$1) if s/^([[:alpha:]])//;
-	return('NE',$1) if s/^(!=)//;
-	return('LE',$1) if s/^(<=|=>)//;
-	return('GE',$1) if s/^(=>|<=)//;
-	return('WILDCARD',$1) if s/^(\?{1,3})//;
-	return('FRAC',$1) if s/^(\\frac)//;
-	return('OVER',$1) if s/^(\\over)//;	
-	return('CMD',$1) if s/^(\\[[:alpha:]]*)//;
+	return('FRAC',$1) if s/^(\\(d|t)?frac)//;
+	return('OVER',$1) if s/^(\\over)//;
+	return('MULTI',$1) if s/^(\*|\\?(\*|times|cdot))//;
+	return('GE',$1) if s/^(\\geq)//;
+	return('LE',$1) if s/^(\\leq)//;
+	return('NE',$1) if s/^(\\neq)//;
+	return('ID',$1) if s/^(\\equiv)//;
+	return('CBO',$1) if s/^(\\\{)//;
+	return('CBC',$1) if s/^(\\\})//;
+	if(s/^(\\begin\{(array|tabular|(p|b|B|v|V|small)?matrix)\})//){
+		++$in_matrix_env;
+		return('BEGMATRIX',$1) 
+		}
+	if(s/^(\\end\{(array|tabular|(p|b|B|v|V|small)?matrix)\})//){
+		--$in_matrix_env>-1 or die "$1 closes unopened matrix environment";
+		return('ENDMATRIX',$1) ;
+	   	}
+	return('LINEBREAK',$1) if s/^(\\\\)//;
+	return('CMD',$1) if s/^(\\[[:alpha:]]+)//;
         return($1,$1) if s/^(.)//s;
     }
 }
@@ -185,7 +244,10 @@ sub parse {
     my $self=shift;
     my $data=shift;
     for ($data){
-	s/\s+//g;
+    	#remove whitespace (is this wise?)
+	#and formating
+	s/(\\?\s+|\\[,!;])//g;
+	s/\\([bB]igg?(l|r)?|[lL]arge|[hH]uge|text|it|sl|bf)//g;
 	$self->YYData->{INPUT} = $_
     }
     $self->YYParse( yylex => \&_lexer, yyerror => \&_error );
