@@ -211,12 +211,12 @@ operation:	term ';' term		{Expression->new(name =>$_[2],is => 'operator',args =>
 		  		       		}
 #		| term SUBSCRIPT term '\%' term	{}
 		| term UNDERSCRIPT term		{
-		       		      		my $script=Expression->new(name =>'**Overscript**',is => 'symbol');	
+		       		      		my $script=Expression->new(name =>'**Underscript**',is => 'symbol');	
 		       	   	    		my $args=Expression->new(name =>',',is => 'operator',args =>[$_[1],$_[3]]);
 		       		      		Expression->new(name =>['(',')'],is => 'bracket',args => [$script,$args])
 		  		       		}
 		| term OVERSCRIPT term		{
-		       		      		my $script=Expression->new(name =>'**Underscript**',is => 'symbol');	
+		       		      		my $script=Expression->new(name =>'**Overscript**',is => 'symbol');	
 		       	   	    		my $args=Expression->new(name =>',',is => 'operator',args =>[$_[1],$_[3]]);
 		       		      		Expression->new(name =>['(',')'],is => 'bracket',args => [$script,$args])
 		  		       		}
