@@ -10,7 +10,15 @@ TODO:
 my %special_symbols=(
    'Pi' => 'pi',
    'E' => 'e',
-   'I' => 'i'
+   'I' => 'i',
+   'Subscript' => 'subscript',
+   'Underscript' => 'underscript',
+   'Overscript' => 'overscript',
+   'Sqrt' => 'sqrt',
+   'Log' => 'log',
+   'Sin' => 'sin',
+   'Cos' => 'cos',
+   'Tan' => 'tan',
 );
 %}
 
