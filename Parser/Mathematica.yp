@@ -131,7 +131,7 @@ symbol:	SYMBOL	{
 		}
 		elsif($symbol =~ /^\\\[(.*)\]$/){
 			$symbol=lc $1;
-			$symbol =~ s/capital([a-z])/uc($1)/e;
+			$symbol =~ s/capital([a-z])/ucfirst($1)/e;
 			$symbol = "**$symbol**";
 		}
 		Expression->new(name =>$symbol,is => 'symbol')
@@ -183,7 +183,7 @@ operation:	term ';' term		{Expression->new(name =>$_[2],is => 'operator',args =>
 		| term '.' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term NCMULTIPLY term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| SQRT term			{
-		       				my $sqrt=Expression->new(name =>'**Sqrt**',is => 'symbol');
+		       				my $sqrt=Expression->new(name =>'**sqrt**',is => 'symbol');
 		       				Expression->new(name =>['(',')'],is => 'bracket',args => [$sqrt,$_[2]])
 						}
 #		| SQRT term '\%' term	%prec SRQT	{}
@@ -192,7 +192,7 @@ operation:	term ';' term		{Expression->new(name =>$_[2],is => 'operator',args =>
 		| term STRINGJOIN term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term '\''	  		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1]])}
 		| term '*'	%prec CONJUGATE {
-		       		      		my $conj=Expression->new(name =>'**Conjugate**',is => 'symbol');	
+		       		      		my $conj=Expression->new(name =>'**conjugate**',is => 'symbol');	
 		       		      		Expression->new(name =>['(',')'],is => 'bracket',args => [$conj,$_[1]])
 						}
 		| term FAC 	      		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1]])}
@@ -200,23 +200,23 @@ operation:	term ';' term		{Expression->new(name =>$_[2],is => 'operator',args =>
 		| term INC	    		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1]])}
 		| INC term	%prec PREINC	{Expression->new(name =>$_[1],is => 'operator',args => [$_[2]])}
 		| term '?' term	      		{
-		       		      		my $ptest=Expression->new(name =>'**PatternTest**',is => 'symbol');	
+		       		      		my $ptest=Expression->new(name =>'**patterntest**',is => 'symbol');	
 		       	   	    		my $args=Expression->new(name =>',',is => 'operator',args =>[$_[1],$_[3]]);
 		       		      		Expression->new(name =>['(',')'],is => 'bracket',args => [$ptest,$args])
 						}
 		| term SUBSCRIPT term		{
-		       		      		my $script=Expression->new(name =>'**Subscript**',is => 'symbol');	
+		       		      		my $script=Expression->new(name =>'**subscript**',is => 'symbol');	
 		       	   	    		my $args=Expression->new(name =>',',is => 'operator',args =>[$_[1],$_[3]]);
 		       		      		Expression->new(name =>['(',')'],is => 'bracket',args => [$script,$args])
 		  		       		}
 #		| term SUBSCRIPT term '\%' term	{}
 		| term UNDERSCRIPT term		{
-		       		      		my $script=Expression->new(name =>'**Underscript**',is => 'symbol');	
+		       		      		my $script=Expression->new(name =>'**underscript**',is => 'symbol');	
 		       	   	    		my $args=Expression->new(name =>',',is => 'operator',args =>[$_[1],$_[3]]);
 		       		      		Expression->new(name =>['(',')'],is => 'bracket',args => [$script,$args])
 		  		       		}
 		| term OVERSCRIPT term		{
-		       		      		my $script=Expression->new(name =>'**Overscript**',is => 'symbol');	
+		       		      		my $script=Expression->new(name =>'**overscript**',is => 'symbol');	
 		       	   	    		my $args=Expression->new(name =>',',is => 'operator',args =>[$_[1],$_[3]]);
 		       		      		Expression->new(name =>['(',')'],is => 'bracket',args => [$script,$args])
 		  		       		}
