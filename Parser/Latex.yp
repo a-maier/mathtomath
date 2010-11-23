@@ -1,7 +1,7 @@
 /* This is the grammar for general mathematical formulas */
 %{
 #use Data::Dump;
-use feature "state";
+use feature qw(state say);
 #special symbols
 my %special_symbols=(
 	'\alpha' => 'alpha',
@@ -214,7 +214,9 @@ sub _lexer {
     for ($parser->YYData->{INPUT}) {
     	#dirty hack here: the parser must never return '&' or '\\'
     	# unless we are in a matrix environment
-        s/^(&|\\\\)//g unless($in_matrix_env);
+	say;
+        s/^(&|\\\\)+// unless($in_matrix_env);
+	say;
 	return('DIGIT',$1) if s/^(\d)//; 
 	return('ALPHA',$1) if s/^([[:alpha:]])//;
 	return('FRAC',$1) if s/^(\\(d|t)?frac)//;
@@ -246,8 +248,8 @@ sub parse {
     for ($data){
     	#remove whitespace (is this wise?)
 	#and formating
-	s/(\\?\s+|\\[,!;])//g;
-	s/\\([bB]igg?(l|r)?|[lL]arge|[hH]uge|text|it|sl|bf)//g;
+	s/([^\\]|^)\\( |[,!;]|([bB]igg?(l|r)?|[lL]arge|[hH]uge|text|it|sl|bf))/$1/g;
+	s/\s+//g;
 	$self->YYData->{INPUT} = $_
     }
     $self->YYParse( yylex => \&_lexer, yyerror => \&_error );
