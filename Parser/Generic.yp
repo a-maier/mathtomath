@@ -60,8 +60,10 @@ my %special_symbols=(
 %token NUMBER
 %token SYMBOL
 
+%left ';'
 %left ','
-%left '=' '>' '<' ID NE GE LE
+%right '=' 
+%left '>' '<' ID NE GE LE
 %left '+' '-'
 %left '*' '/'
 %left '^'
@@ -110,6 +112,7 @@ relation:	term '=' term	{Expression->new(name =>$_[2],is => 'operator',args => [
 operation:	'+' term			{$_[2]}
 		| term '+' term 		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| '-' term			{Expression->new(name =>$_[1],is => 'operator',args => [$_[2]])}
+		| term ';' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term '-' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term '*' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		|  number bracket %prec '*'	{Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[2]])} 
@@ -124,7 +127,9 @@ bracket: '(' term ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => 
 ;
 
 function:	symbol '(' term ')'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
+		| wildcard '(' term ')'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
 	  	| symbol '(' sequence ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
+	  	| wildcard '(' sequence ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
 #  also support currying
 	  	| function '(' term ')' 	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
 ;

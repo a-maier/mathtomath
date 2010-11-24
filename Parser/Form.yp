@@ -69,7 +69,9 @@ bracket: '(' term ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => 
 ;
 
 function:	symbol '(' term ')'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
+		| wildcard '(' term ')'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
 	  	| symbol '(' sequence ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
+	  	| wildcard '(' sequence ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
 ;
 
 list:		'{' '}'				{Expression->new(name =>['{','}'],is => 'bracket')}
