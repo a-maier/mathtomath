@@ -3,6 +3,7 @@
 # -recursive methods?
 # - input hinting (please enter ...)
 # - run time including modules properly
+# - heuristic determination of input format (keep dreaming...)
 
 use 5.10.1;
 use warnings;
@@ -49,7 +50,7 @@ if($help){
 #TODO: multiple output formats
 eval(require "Parser/$in_format.pm" );
 foreach my $out_format (@out_formats){
-    eval(require $out_format.'.pm');
+    eval(require "Printer/$out_format.pm");
 }
 
 {
