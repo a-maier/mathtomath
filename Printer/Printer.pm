@@ -1,6 +1,7 @@
-package Generic_out;
+package Printer;
 #define the output in generic format
-
+#all output classes inherit from this one
+#TODO: make local variables inheritable
 use 5.10.1;
 use strict;
 use Data::Dump;
@@ -45,10 +46,7 @@ my %symbol_by_name=();
 my %special_fun=();
 
 sub to_string{
-    #get rid of the module name in the first (non-recursive) call
-    # AND ASK STEFFEN HOW TO DO THIS PROPERLY
-#    my $format= shift;
-    shift if $_[0] eq 'Generic_out';
+    my $self= shift;
     
     my $tree=shift;
     # say "to_string";
@@ -58,31 +56,31 @@ sub to_string{
     my $string;
     #special treatment for some operators/functions/whatever
     if (defined $special_fun{$tree->name}){
-	return &{$special_fun{$tree->name}}($tree->name,$tree->args,$last_prec)
+	return &{$special_fun{$tree->name}}($self,$tree->name,$tree->args,$last_prec)
     }
 
     given($tree->is){
-	when('number') {$string= number_to_string($tree->name)}
-	when('string') {$string= string_to_string($tree->name);}
+	when('number') {$string= $self->number_to_string($tree->name)}
+	when('string') {$string= $self->string_to_string($tree->name);}
 	when('symbol') {
 	    my $sym=(defined $symbol_by_name{$tree->name})?$symbol_by_name{$tree->name}:$tree->name;
-	    $string= symbol_to_string($sym)
+	    $string= $self->symbol_to_string($sym)
 	}
 	when('operator') {
 	    #check whether the operator exists in this format
 	    exists $operator_by_name{$tree->name} 
-	    or die "Don't know how to format operator '$tree->name' in generic format";
-	    $string=operator_to_string($operator_by_name{$tree->name},$tree->args, $last_prec);
+	    or die "Operator '".$tree->name."' does not exist in format $self";
+	    $string=$self->operator_to_string($operator_by_name{$tree->name},$tree->args, $last_prec);
 	}
 	when('bracket') {
 	    for my $i (0..1){
 		exists $operator_by_name{$tree->name->[$i]} 
-		or die "Don't know how to format bracket '$tree->name->[$i]' in generic format";
+		or die "Bracket '".$tree->name->[$i]."'does not exist in format $self";
 	    }
 	    my $brackets;
 	    #check whether the brackets are legal tokens in this format
 	    @$brackets=map {$operator_by_name{$_}->name} @{$tree->name};
-	    $string= bracket_to_string($brackets,$tree->args)
+	    $string= $self->bracket_to_string($brackets,$tree->args)
 	}
 	default {die "Don't know how to format a '$tree->{is}' as a string in format 'generic'"}
     }
@@ -92,6 +90,7 @@ sub to_string{
 #format a symbol as a string, either ignoring all illegal tokens
 # TODO: or dying on error
 sub symbol_to_string{
+    my $self=shift;
     $_=$_[0];
     #treat special symbols
     s/(^\*\*|\*\*$)//g;
@@ -104,6 +103,7 @@ sub symbol_to_string{
 
 #format a number as a string
 sub number_to_string{
+    my $self=shift;
     $_=$_[0];
     s/[^\d\.]//g;
     /^(\d+|\d*\.\d+|\d+\.\d*)$/ 
@@ -115,7 +115,8 @@ sub number_to_string{
 }
 
 #format an internal string as an output string 
-sub number_to_string{
+sub string_to_string{
+    my $self=shift;
     return "\"$_[0]\"";
 }
 
@@ -127,6 +128,7 @@ sub number_to_string{
 
 #format an operator
 sub operator_to_string{
+    my $self=shift;
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
@@ -134,10 +136,10 @@ sub operator_to_string{
     if(scalar @$args == 1){
 	#there is one argument, so it has to be either a postfix or a prefix operator
 	if($operator->pos eq 'prefix'){
-	    $string= prefix_operator_to_string($operator,$args);
+	    $string= $self->prefix_operator_to_string($operator,$args);
 	}
 	elsif($operator->pos eq 'postfix'){
-	    $string= postfix_operator_to_string($operator,$args);
+	    $string= $self->postfix_operator_to_string($operator,$args);
 	}
 	else{
 	    die "Failed to format $operator->pos operator '$operator->name' with one argument"
@@ -145,38 +147,43 @@ sub operator_to_string{
     }
     else{
 	#more than one argument, has to be an infix operator
-	$string = infix_operator_to_string($operator,$args);
+	$string = $self->infix_operator_to_string($operator,$args);
     }
     $string='('.$string.')' if ($last_prec > $operator->prec);
     return $string
 }
 
 sub prefix_operator_to_string{
+    my $self=shift;
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
-    return $operator->name.to_string($$args[0],$operator->prec);
+    return $operator->name.$self->to_string($$args[0],$operator->prec);
 }
 
 sub postfix_operator_to_string{
+    my $self=shift;
+
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
-    return to_string($$args[0],$operator->prec).$operator->name;
+    return $self->to_string($$args[0],$operator->prec).$operator->name;
 }
 
 sub infix_operator_to_string{
+    my $self=shift;
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
-    return join($operator->name, map {to_string($_,$operator->prec)} @$args);
+    return join($operator->name, map {$self->to_string($_,$operator->prec)} @$args);
 }
 
 sub bracket_to_string{
+    my $self=shift;
     my $brackets=shift;
     my $args=shift;
     scalar @$args<3 or die "Too many arguments for bracket";
-    return((scalar @$args>1?to_string($args->[0]):'').$brackets->[0].to_string($args->[-1]).$brackets->[1])
+    return((scalar @$args>1?$self->to_string($args->[0]):'').$brackets->[0].$self->to_string($args->[-1]).$brackets->[1])
 }
 
 1;
