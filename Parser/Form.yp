@@ -116,7 +116,7 @@ sub _lexer {
     for ($parser->YYData->{INPUT}) {
 	#special symbols of the type [...]
     	if($symbol_mode and s/^\[//){
-	    my $sym='';
+	    my $sym='[';
 	    my $brackets=1;
 	    while($brackets){
 		$_ or die "Symbol '[$sym' has no terminating ']'";
@@ -130,7 +130,6 @@ sub _lexer {
 		    $sym.=']'
 		}
 	    }
-	    chop $sym;
 	    $symbol_mode=0;
 	    return('SYMBOL',$sym)
 	}

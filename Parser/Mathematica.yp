@@ -288,7 +288,7 @@ sub _lexer {
 	return('SYMBOL',$1) if s/^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)//;
 	#named characters
 	return('SYMBOL',$1) if s/^(\\\[.*?\])//;
-	return('STRING',$1) if s/^(".*?[^\\]")//;
+	return('STRING',$1) if s/^"(.*?[^\\])"//;
 	return('FBOX',$1) if s/^(\\´)//;
 	return('PUT',$1) if s/^(>{2,3})//;
 	return('SET',$1) if s/^(=\.|\^?:?=)//;
