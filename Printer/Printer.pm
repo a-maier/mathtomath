@@ -12,7 +12,7 @@ use Operator;
 # which operators exist, which token(s) are to be used for output, precedence, pre/in/postfix...
 # brackets should also be included here to indicate that they are legal
 my %operator_by_name=(
-    ';'		=> Operator->new(name => ';',prec => 0,assoc =>'left'),
+    ';'		=> Operator->new(name => ';',prec => 0,assoc =>'left',pos => 'postfix'),
     ','		=> Operator->new(name => ',',prec => 100,assoc =>'left'),
     '='		=> Operator->new(name => '=',prec => 200,assoc =>'left'),
     '=='	=> Operator->new(name => '==',prec => 300,assoc =>'right'),
@@ -22,7 +22,7 @@ my %operator_by_name=(
     '>'		=> Operator->new(name => '>',prec => 300,assoc =>'right'),
     '>='	=> Operator->new(name => '>=',prec => 300,assoc =>'right'),
     '+'		=> Operator->new(name => '+',prec => 400,assoc =>'left'),
-    '-'		=> Operator->new(name => '-',prec => 400,assoc =>'left'),
+    '-'		=> Operator->new(name => '-',prec => 400,assoc =>'left',pos => 'prefix'),
     '*'		=> Operator->new(name => '*',prec => 500,assoc =>'left'),
     '/'		=> Operator->new(name => '/',prec => 500,assoc =>'left'),
     '^'		=> Operator->new(name => '^',prec => 600,assoc =>'left'),
@@ -142,7 +142,7 @@ sub operator_to_string{
 	    $string= $self->postfix_operator_to_string($operator,$args);
 	}
 	else{
-	    die "Failed to format $operator->pos operator '$operator->name' with one argument"
+	    die "Failed to format ".$operator->pos." operator '".$operator->name."' with one argument"
 	} 
     }
     else{
