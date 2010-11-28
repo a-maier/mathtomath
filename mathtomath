@@ -2,6 +2,8 @@
 # - input hinting (please enter ...)
 # - run time including modules properly?
 # - heuristic determination of input format (keep dreaming...)
+# - operator associativity in output!
+# - custom options
 
 use 5.10.1;
 use warnings;
