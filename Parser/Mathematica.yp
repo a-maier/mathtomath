@@ -7,19 +7,8 @@ TODO:
 */
 %{
 #use Data::Dump;
-my %special_symbols=(
-   'Pi' => 'pi',
-   'E' => 'e',
-   'I' => 'i',
-   'Subscript' => 'subscript',
-   'Underscript' => 'underscript',
-   'Overscript' => 'overscript',
-   'Sqrt' => 'sqrt',
-   'Log' => 'log',
-   'Sin' => 'sin',
-   'Cos' => 'cos',
-   'Tan' => 'tan',
-);
+use Printer::Printer;
+my %special_symbols=Printer->get_config('Symbols/Mathematica.dat');
 %}
 
 %token NUMBER

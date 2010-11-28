@@ -2,62 +2,17 @@
 %{
 #use Data::Dump;
 use feature qw(state say);
-#special symbols
-my %special_symbols=(
-	'\alpha' => 'alpha',
-	'\beta' => 'beta',
-	'\gamma' => 'gamma',
-	'\delta' => 'delta',
-	'\epsilon' => 'epsilon',
-	'\zeta' => 'zeta',
-	'\eta' => 'eta',
-	'\theta' => 'theta',
-	'\iota' => 'iota',
-	'\kappa' => 'kappa',
-	'\lambda' => 'lambda',
-	'\mu' => 'mu',
-	'\nu' => 'nu',
-	'\xi' => 'xi',
-	'\omicron' => 'omicron',
-	'\pi' => 'pi',
-	'\rho' => 'rho',
-	'\sigma' => 'sigma',
-	'\tau' => 'tau',
-	'\upsilon' => 'upsilon',
-	'\phi' => 'phi',
-	'\chi' => 'chi',
-	'\psi' => 'psi',
-	'\omega' => 'omega',
-	'\Alpha' => 'Alpha',
-	'\Beta' => 'Beta',
-	'\Gamma' => 'Gamma',
-	'\Delta' => 'Delta',
-	'\Epsilon' => 'Epsilon',
-	'\Zeta' => 'Zeta',
-	'\Eta' => 'Eta',
-	'\Theta' => 'Theta',
-	'\Iota' => 'Iota',
-	'\Kappa' => 'Kappa',
-	'\Lambda' => 'Lambda',
-	'\Mu' => 'Mu',
-	'\Nu' => 'Nu',
-	'\Xi' => 'Xi',
-	'\Omicron' => 'Omicron',
-	'\Pi' => 'Pi',
-	'\Rho' => 'Rho',
-	'\Sigma' => 'Sigma',
-	'\Tau' => 'Tau',
-	'\Upsilon' => 'Upsilon',
-	'\Phi' => 'Phi',
-	'\Chi' => 'Chi',
-	'\Psi' => 'Psi',
-	'\Omega' => 'Omega',
-	'\log' => 'log',
-	'\sin' => 'sin',
-	'\cos' => 'cos',
-	'\tan' => 'tan'
-);
+use Printer::Printer;
+my %special_symbols=Printer->get_config('Symbols/Latex.dat');
 
+sub to_symbol{
+    my $symbol=shift;
+    #special characters
+    if(defined $special_symbols{$symbol}){
+	$symbol="**$special_symbols{$symbol}**";		
+    }
+    return Expression->new(name =>$symbol,is => 'symbol')
+};
 %}
 
 %token DIGIT
@@ -84,7 +39,7 @@ input: /* empty */
 ;
 
 term:	number {Expression->new(name =>$_[1],is => 'number')}
-	| symbol {Expression->new(name =>$_[1],is => 'symbol')}
+	| symbol {to_symbol($_[1])}
 	| cmd
 	| operation
 	| relation
@@ -104,11 +59,11 @@ symbol: ALPHA
 	| symbol ALPHA %prec JOIN {$_[1].$_[2]}
 ;
 
-cmd: CMD {Expression->new(name =>$_[1],is => 'symbol')}
+cmd: CMD {to_symbol($_[1])}
 ;
 
 atom: DIGIT {Expression->new(name =>$_[1],is => 'number')}
-      | ALPHA {Expression->new(name =>$_[1],is => 'symbol')}
+      | ALPHA {to_symbol($_[1])}
       | cmd
 ;
 
@@ -137,7 +92,7 @@ operation: FRAC argument argument	{Expression->new(name =>'/',is => 'operator',a
 	      	     	     	   		Expression->new(name =>'*',is => 'operator',args => [$num,$_[2]])} 
 	   |  number symbol %prec MULTI 	{
 	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
-	      	     	    	  		my $sym=Expression->new(name =>$_[2],is => 'symbol');
+	      	     	    	  		my $sym=to_symbol($_[2]);
 	      	     	    	  		Expression->new(name =>'*',is => 'operator',args => [$num,$sym])
 						} 
 	   |  number cmd %prec MULTI 		{
@@ -163,7 +118,7 @@ relation:	term '=' term	{Expression->new(name =>$_[2],is => 'operator',args => [
 ;
 
 function:	symbol '(' term ')'		{
-		   	      	      	 	my $sym=Expression->new(name =>$_[1],is => 'symbol');
+		   	      	      	 	my $sym=to_symbol($_[1]);
     	   					Expression->new(name =>['(',')'],is => 'bracket',args => [$sym,$_[3]])
 						}
 		| cmd '(' term ')'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
@@ -214,9 +169,7 @@ sub _lexer {
     for ($parser->YYData->{INPUT}) {
     	#dirty hack here: the parser must never return '&' or '\\'
     	# unless we are in a matrix environment
-	say;
         s/^(&|\\\\)+// unless($in_matrix_env);
-	say;
 	return('DIGIT',$1) if s/^(\d)//; 
 	return('ALPHA',$1) if s/^([[:alpha:]])//;
 	return('FRAC',$1) if s/^(\\(d|t)?frac)//;

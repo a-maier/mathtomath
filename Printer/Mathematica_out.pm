@@ -1,5 +1,5 @@
 package Mathematica_out;
-#define the output in LaTeX format
+#define the output in Mathematica format
 
 use 5.10.1;
 use strict;

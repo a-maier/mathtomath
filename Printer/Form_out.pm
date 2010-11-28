@@ -8,6 +8,17 @@ use Operator;
 #----------------------------------------------------------------------------------------------------
 use base 'Printer';
 
+sub init{
+    my $self=shift;
+    $self->SUPER::init;
+    #these operators do not exist
+    map {delete $self->{operators}->{$_}} qw(> < == != >= <= ???);
+    # '=' is not associative
+    $self->{operators}->{'='}=Operator->new(name => '=',prec => 200);
+    # '??' is mapped onto a different operator
+    $self->{operators}->{'??'}=Operator->new(name => '?',prec => 800,pos => 'prefix');
+}
+
 #format a symbol as a string
 sub symbol_to_string{
     my $self=shift;

@@ -1,8 +1,9 @@
 /* This is the grammar for FORM */
 %{
 use Data::Dump;
-    use feature "state";
-    my %special_symbols=();
+ use feature "state";
+ use Printer::Printer;
+ my %special_symbols=Printer->get_config('Symbols/Form.dat');
 %}
 
 %token NUMBER

@@ -1,49 +1,86 @@
 package Printer;
 #define the output in generic format
 #all output classes inherit from this one
-#TODO: make local variables inheritable
 use 5.10.1;
 use strict;
 use Data::Dump;
 use Operator;
 #----------------------------------------------------------------------------------------------------
 
+
+sub new{
+    my $class=shift;
+    my $self={};
+
+    bless($self,$class);
+    $self->init;
+    return $self;
+}
+
+sub init{
+    my $self=shift;
+
+    #this is very questionable
+    $self->{format}="$self";
+    $self->{format} =~ s/(_out)?=.*//;
+    say "Output format: $self->{format}";
 #operator properties:
 # which operators exist, which token(s) are to be used for output, precedence, pre/in/postfix...
 # brackets should also be included here to indicate that they are legal
-my %operator_by_name=(
-    ';'		=> Operator->new(name => ';',prec => 0,assoc =>'left',pos => 'postfix'),
-    ','		=> Operator->new(name => ',',prec => 100,assoc =>'left'),
-    '='		=> Operator->new(name => '=',prec => 200,assoc =>'left'),
-    '=='	=> Operator->new(name => '==',prec => 300,assoc =>'right'),
-    '!='	=> Operator->new(name => '!=',prec => 300,assoc =>'right'),
-    '<'		=> Operator->new(name => '<',prec => 300,assoc =>'right'),
-    '<='	=> Operator->new(name => '<=',prec => 300,assoc =>'right'),
-    '>'		=> Operator->new(name => '>',prec => 300,assoc =>'right'),
-    '>='	=> Operator->new(name => '>=',prec => 300,assoc =>'right'),
-    '+'		=> Operator->new(name => '+',prec => 400,assoc =>'left'),
-    '-'		=> Operator->new(name => '-',prec => 400,assoc =>'left',pos => 'prefix'),
-    '*'		=> Operator->new(name => '*',prec => 500,assoc =>'left'),
-    '/'		=> Operator->new(name => '/',prec => 500,assoc =>'left'),
-    '^'		=> Operator->new(name => '^',prec => 600,assoc =>'left'),
-    '.'		=> Operator->new(name => '.',prec => 700),
-    '?'		=> Operator->new(name => '?',prec => 800,pos => 'postfix'),
-    '??'	=> Operator->new(name => '??',prec => 800,pos => 'postfix'),
-    '???'	=> Operator->new(name => '???',prec => 800,pos => 'postfix'),
-    '['		=> Operator->new(name => '['),
-    ']'		=> Operator->new(name => ']'),
-    '('		=> Operator->new(name => '('),
-    ')'		=> Operator->new(name => ')'),
-    '{'		=> Operator->new(name => '{'),
-    '}'		=> Operator->new(name => '}')
-    );
-
+    %{$self->{operators}}=(
+	';'	=> Operator->new(name => ';',prec => 0,assoc =>'left',pos => 'postfix'),
+	','	=> Operator->new(name => ',',prec => 100,assoc =>'left'),
+	'='	=> Operator->new(name => '=',prec => 200,assoc =>'left'),
+	'=='	=> Operator->new(name => '==',prec => 300,assoc =>'right'),
+	'!='	=> Operator->new(name => '!=',prec => 300,assoc =>'right'),
+	'<'	=> Operator->new(name => '<',prec => 300,assoc =>'right'),
+	'<='	=> Operator->new(name => '<=',prec => 300,assoc =>'right'),
+	'>'	=> Operator->new(name => '>',prec => 300,assoc =>'right'),
+	'>='	=> Operator->new(name => '>=',prec => 300,assoc =>'right'),
+	'+'	=> Operator->new(name => '+',prec => 400,assoc =>'left'),
+	'-'	=> Operator->new(name => '-',prec => 400,assoc =>'left',pos => 'prefix'),
+	'*'	=> Operator->new(name => '*',prec => 500,assoc =>'left'),
+	'/'	=> Operator->new(name => '/',prec => 500,assoc =>'left'),
+	'^'	=> Operator->new(name => '^',prec => 600,assoc =>'left'),
+	'.'	=> Operator->new(name => '.',prec => 700),
+	'?'	=> Operator->new(name => '?',prec => 800,pos => 'postfix'),
+	'??'	=> Operator->new(name => '??',prec => 800,pos => 'postfix'),
+	'???'	=> Operator->new(name => '???',prec => 800,pos => 'postfix'),
+	'['	=> Operator->new(name => '['),
+	']'	=> Operator->new(name => ']'),
+	'('	=> Operator->new(name => '('),
+	')'	=> Operator->new(name => ')'),
+	'{'	=> Operator->new(name => '{'),
+	'}'	=> Operator->new(name => '}')
+	);
 #special output for certain functions
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
-my %symbol_by_name=();
-
+    %{$self->{symbols}}=reverse $self->get_config("Symbols/$self->{format}.dat");
 #special output functions for single objects
-my %special_fun=();
+    %{$self->{specials}}=();
+
+}
+
+sub operator_by_name{
+    my $self=shift;
+    my $op_name=shift;
+    $self->{operators}->{$op_name}= $_[0] if(defined $_[0]);
+    return $self->{operators}->{$op_name}
+}
+
+sub symbol_by_name{
+    my $self=shift;
+    my $sym_name=shift;
+    $self->{symbols}->{$sym_name}= $_[0] if(defined $_[0]);
+    return $self->{symbols}->{$sym_name}
+}
+
+sub special_by_name{
+    my $self=shift;
+    my $sym_name=shift;
+    $self->{specials}->{$sym_name}= $_[0] if(defined $_[0]);
+    return $self->{specials}->{$sym_name}
+}
 
 sub to_string{
     my $self= shift;
@@ -55,34 +92,39 @@ sub to_string{
     defined $last_prec or $last_prec=0;
     my $string;
     #special treatment for some operators/functions/whatever
-    if (defined $special_fun{$tree->name}){
-	return &{$special_fun{$tree->name}}($self,$tree->name,$tree->args,$last_prec)
+    if (defined $self->special_by_name($tree->name)){
+	return &{$self->special_by_name($tree->name)}($self,$tree->name,$tree->args,$last_prec)
     }
 
     given($tree->is){
 	when('number') {$string= $self->number_to_string($tree->name)}
 	when('string') {$string= $self->string_to_string($tree->name);}
 	when('symbol') {
-	    my $sym=(defined $symbol_by_name{$tree->name})?$symbol_by_name{$tree->name}:$tree->name;
+	    my $sym=$tree->name;
+	    if($sym =~ /^\*\*/ and $sym =~ /\*\*$/){
+		my $tmp=$sym;
+		$tmp =~ s/(^\*\*|\*\*$)//g;
+		$sym = $self->symbol_by_name($tmp) if defined $self->symbol_by_name($tmp);
+	    }
 	    $string= $self->symbol_to_string($sym)
 	}
 	when('operator') {
 	    #check whether the operator exists in this format
-	    exists $operator_by_name{$tree->name} 
-	    or die "Operator '".$tree->name."' does not exist in format $self";
-	    $string=$self->operator_to_string($operator_by_name{$tree->name},$tree->args, $last_prec);
+	    defined $self->operator_by_name($tree->name) 
+	    or die "Operator '".$tree->name."' does not exist in format $self->{format}";
+	    $string=$self->operator_to_string($self->operator_by_name($tree->name),$tree->args, $last_prec);
 	}
 	when('bracket') {
 	    for my $i (0..1){
-		exists $operator_by_name{$tree->name->[$i]} 
-		or die "Bracket '".$tree->name->[$i]."'does not exist in format $self";
+		defined $self->operator_by_name($tree->name->[$i]) 
+		or die "Bracket '".$tree->name->[$i]."'does not exist in format $self->{format}";
 	    }
 	    my $brackets;
 	    #check whether the brackets are legal tokens in this format
-	    @$brackets=map {$operator_by_name{$_}->name} @{$tree->name};
+	    @$brackets=map {$self->operator_by_name($_)->name} @{$tree->name};
 	    $string= $self->bracket_to_string($brackets,$tree->args)
 	}
-	default {die "Don't know how to format a '$tree->{is}' as a string in format 'generic'"}
+	default {die "Don't know how to format a '$tree->{is}' as a string in format $self->{format}"}
     }
     return $string;
 }
@@ -92,12 +134,10 @@ sub to_string{
 sub symbol_to_string{
     my $self=shift;
     $_=$_[0];
-    #treat special symbols
-    s/(^\*\*|\*\*$)//g;
     #delete illegal tokens
+    s/^[[:^alpha:]]+//;
     s/\W+//g;
-    s/^[[:^alpha:]]+//g;
-    $_ or die "Symbol '$_[0]' can't be converted into the format 'generic', because it does not contain any legal tokens";
+    $_ or die "Symbol '$_[0]' can't be converted into the format $self->{format}, because it does not contain any legal tokens";
     return $_;
 }
 
@@ -107,7 +147,7 @@ sub number_to_string{
     $_=$_[0];
     s/[^\d\.]//g;
     /^(\d+|\d*\.\d+|\d+\.\d*)$/ 
-	or die "Number '$_[0]' can't be converted into the format 'generic'";
+	or die "Number '$_[0]' can't be converted into the format $self->{format}";
     $_=$1;
     if(/^\./){$_='0'.$_}
     elsif(/\.$/){$_.='0'}
@@ -185,5 +225,22 @@ sub bracket_to_string{
     scalar @$args<3 or die "Too many arguments for bracket";
     return((scalar @$args>1?$self->to_string($args->[0]):'').$brackets->[0].$self->to_string($args->[-1]).$brackets->[1])
 }
+
+#return contents of a configuration file
+sub get_config{
+    shift;
+    my $file=shift;
+    open(IN,$file) or die "Failed to open $file for reading: $!";
+    my $contents='';
+    while(<IN>){
+	#ignore whitespace and comments
+	s/(\s+|\#.*)//g;
+	$contents.=$_;
+    }
+    close IN;
+    my @tmp=split(/=>|,/,$contents);
+    return  @tmp;
+}
+
 
 1;
