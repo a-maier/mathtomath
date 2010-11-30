@@ -30,7 +30,7 @@ sub init{
     %{$self->{operators}}=(
 	';'	=> Operator->new(name => ';',prec => 0,assoc =>'left',pos => 'postfix'),
 	','	=> Operator->new(name => ',',prec => 100,assoc =>'left'),
-	'='	=> Operator->new(name => '=',prec => 200,assoc =>'left'),
+	'='	=> Operator->new(name => '=',prec => 200,assoc =>'right'),
 	'=='	=> Operator->new(name => '==',prec => 300,assoc =>'right'),
 	'!='	=> Operator->new(name => '!=',prec => 300,assoc =>'right'),
 	'<'	=> Operator->new(name => '<',prec => 300,assoc =>'right'),
@@ -51,7 +51,10 @@ sub init{
 	'('	=> Operator->new(name => '('),
 	')'	=> Operator->new(name => ')'),
 	'{'	=> Operator->new(name => '{'),
-	'}'	=> Operator->new(name => '}')
+	'}'	=> Operator->new(name => '}'),
+	#sometimes we need a comparison with the last operator
+	# when there is no such operator, we use 0
+	0       => Operator->new(name => '',prec => 0),
 	);
 #special output for certain functions
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
@@ -88,12 +91,19 @@ sub to_string{
     my $tree=shift;
     # say "to_string";
     #dd($tree);
-    my $last_prec=shift;
-    defined $last_prec or $last_prec=0;
+    # last operator
+    # if the current operator has a lower precedence, we need a bracket
+    my $last_op=shift;
+    defined $last_op or $last_op=0;
+    # argument number of last operator
+    #if the current operator equals the old one, depending on the 
+    #associativity we might need a bracket
+    my $arg_num=shift;
+    defined $arg_num or $arg_num=0;
     my $string;
     #special treatment for some operators/functions/whatever
     if (defined $self->special_by_name($tree->name)){
-	return &{$self->special_by_name($tree->name)}($self,$tree->name,$tree->args,$last_prec)
+	return &{$self->special_by_name($tree->name)}($self,$tree->name,$tree->args,$last_op)
     }
 
     given($tree->is){
@@ -112,7 +122,7 @@ sub to_string{
 	    #check whether the operator exists in this format
 	    defined $self->operator_by_name($tree->name) 
 	    or die "Operator '".$tree->name."' does not exist in format $self->{format}";
-	    $string=$self->operator_to_string($self->operator_by_name($tree->name),$tree->args, $last_prec);
+	    $string=$self->operator_to_string($self->operator_by_name($tree->name),$tree->args, $last_op,$arg_num);
 	}
 	when('bracket') {
 	    for my $i (0..1){
@@ -171,7 +181,8 @@ sub operator_to_string{
     my $self=shift;
     my $operator=shift;
     my $args=shift;
-    my $last_prec=shift;
+    my $last_op=shift;
+    my $arg_num=shift;
     my $string;
     if(scalar @$args == 1){
 	#there is one argument, so it has to be either a postfix or a prefix operator
@@ -189,7 +200,22 @@ sub operator_to_string{
 	#more than one argument, has to be an infix operator
 	$string = $self->infix_operator_to_string($operator,$args);
     }
-    $string='('.$string.')' if ($last_prec > $operator->prec);
+    #check precedence
+    my $last_prec=$self->operator_by_name($last_op)->prec;
+    
+    if ($last_prec > $operator->prec) {$string='('.$string.')'}
+    #check associativiy - only important if the previous operator equals the current one
+    elsif($operator->name eq $last_op){
+	if(! defined $operator->assoc){
+	    die "Subsequent occurence of non-associative operator ".$operator->name;
+	}
+	elsif(
+	    (($operator->assoc eq 'right') and ($arg_num eq 'left'))
+	    or (($operator->assoc eq 'left') and ($arg_num eq 'right'))
+	    ){#the associativity has changed compared to the input format -> we need a bracket
+	    $string='('.$string.')';
+	}
+    }
     return $string
 }
 
@@ -198,7 +224,7 @@ sub prefix_operator_to_string{
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
-    return $operator->name.$self->to_string($$args[0],$operator->prec);
+    return $operator->name.$self->to_string($$args[0],$operator->name,'right');
 }
 
 sub postfix_operator_to_string{
@@ -207,7 +233,7 @@ sub postfix_operator_to_string{
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
-    return $self->to_string($$args[0],$operator->prec).$operator->name;
+    return $self->to_string($$args[0],$operator->name,'left').$operator->name;
 }
 
 sub infix_operator_to_string{
@@ -215,7 +241,10 @@ sub infix_operator_to_string{
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
-    return join($operator->name, map {$self->to_string($_,$operator->prec)} @$args);
+    return $self->to_string($$args[0],$operator->name,'left')
+	.$operator->name
+	.$self->to_string($$args[1],$operator->name,'right')
+#join($operator->name, map {$self->to_string($_,$operator->prec)} @$args);
 }
 
 sub bracket_to_string{
