@@ -51,8 +51,8 @@ sub ratio_as_frac{
     my $self=shift;
     shift;
     my $args=shift;
-    my $num=$self->to_string($self->fall_through_bracket($$args[0]));
-    my $den=$self->to_string($self->fall_through_bracket($$args[1]));
+    my ($num,$den);
+    ($num,$den)=map {$self->to_string($self->fall_through_bracket($_))} @$args;
     my $string="\\frac{$num}{$den}";
     return $string;
 }
@@ -63,6 +63,7 @@ sub product{
     shift;
     my $args=shift;
     #TODO: it would be wise to use operator_to_string here, but first these operators have to be defined
+    #TODO: the following check is not sufficient
     if($$args[0]->is eq 'number' and $$args[1]->is eq 'number'){
 	return $self->to_string($$args[0]).'\cdot'.$self->to_string($$args[1]) 
     }
