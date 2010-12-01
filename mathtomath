@@ -2,9 +2,9 @@
 # - input hinting (please enter ...)
 # - run time including modules properly?
 # - heuristic determination of input format (keep dreaming...)
-# - operator associativity in output!
 # - custom options
-
+# - fix multiple output formats
+# - tests
 use 5.10.1;
 use warnings;
 use strict;
@@ -23,16 +23,17 @@ our $verbose;
 our $strict;
 
 my $in_format='Generic';
-my $out_format='Generic';
+my @out_formats=();
 
 GetOptions( 'informat|if=s' => \$in_format,
-	    'outformats|of=s' => \$out_format,
-	    'strict' => \$strict,
-	    'verbose'=> \$verbose,
-	    'help'=> \$help,
+	    'outformats|of=s' => \@out_formats,
+	    'strict!' => \$strict,
+	    'verbose!'=> \$verbose,
+	    'help|?'=> \$help,
 	    'version'=> \$version
     );
-my @out_formats=split /,/,$out_format;
+@out_formats=('Generic') unless @out_formats;
+@out_formats=(split /,/,join(',',@out_formats));
 @out_formats = map {$_.='_out';ucfirst} @out_formats;
 $in_format=ucfirst $in_format;
 
@@ -64,7 +65,7 @@ my $tree=$parser->parse($_)or exit(1);
 
 #create output in the desired format
 foreach my $out_format (@out_formats){
-    dd($tree);
+    dd $tree;
     my $printer=${out_format}->new;
     my $out_str=$printer->to_string($tree);
     say $out_str;
