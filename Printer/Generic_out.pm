@@ -8,11 +8,4 @@ use Operator;
 #----------------------------------------------------------------------------------------------------
 use base 'Printer';
 
-# sub init{
-#     my $self=shift;
-#     $self->SUPER::init;
-#     #custom symbols for this format
-#     %{$self->{symbols}}=reverse($self->get_config('Symbols/Generic.dat'));
-# }
-
 1;

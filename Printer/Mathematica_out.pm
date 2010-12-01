@@ -46,7 +46,7 @@ sub init{
 	'...'    => Operator->new(name => '..',prec => 1100),
 	'||'    => Operator->new(name => '||',prec => 1200,assoc => 'left'),
 	'&&'    => Operator->new(name => '&&',prec => 1300,assoc => 'left'),
-	'!'    => Operator->new(name => '!',prec => 1400,assoc => 'right'),
+#	'!'    => Operator->new(name => '!',prec => 1400,assoc => 'right',pos => 'prefix'),
 	'==='	=> Operator->new(name => '===',prec => 1500,assoc =>'left'),
 	'=!='	=> Operator->new(name => '=!=',prec => 1500,assoc =>'left'),
 	'<='	=> Operator->new(name => '<=',prec => 1600,assoc =>'left'),
@@ -66,7 +66,8 @@ sub init{
 	'^'	=> Operator->new(name => '^',prec => 2400,assoc =>'right'),
 	'<>'	=> Operator->new(name => '<>',prec => 2500,assoc =>'right'),
 	'\''	=> Operator->new(name => '\'',prec => 2600,assoc =>'left'),
-	'!!'	=> Operator->new(name => '!!',prec => 2700,assoc =>'nonassoc',pos => 'prefix'),
+	'!'	=> Operator->new(name => '!',prec => 2700,assoc =>'nonassoc',pos => 'postfix'),
+	'!!'	=> Operator->new(name => '!!',prec => 2700,assoc =>'nonassoc',pos => 'postfix'),
 	'@@'	=> Operator->new(name => '@@',prec => 2800,assoc =>'right',pos => 'prefix'),
 	'@@@'	=> Operator->new(name => '@@@',prec => 2800,assoc =>'right',pos => 'prefix'),
 	'/@'	=> Operator->new(name => '/@',prec => 2800,assoc =>'right',pos => 'prefix'),
@@ -109,7 +110,10 @@ sub bracket_to_string{
     elsif(scalar @$args==2){
 	#for functions use square brackets
 	if($$brackets[0] eq '(' && $$brackets[1] eq ')'){
-	    return $self->to_string($args->[0]).'['.$self->to_string($args->[1]).']'
+	    return $self->to_string($args->[0])
+		.$self->replace_local('[')
+		.$self->to_string($args->[1])
+		.$self->replace_local(']')
 	}
 	return $self->SUPER::bracket_to_string($brackets,$args)
     }
@@ -126,7 +130,7 @@ sub symbol_to_string{
     $_=$_[0];
     #if it contains illegal tokens, we transform it into a string
     return $self->string_to_string($_[0]) unless /^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)$/;
-    return $_;
+    return $self->replace_local($_);
 }
 
 

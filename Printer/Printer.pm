@@ -13,13 +13,13 @@ sub new{
     my $self={};
 
     bless($self,$class);
-    $self->init;
+    $self->init(@_);
     return $self;
 }
 
 sub init{
     my $self=shift;
-
+    my %options=@_;
     #this is very questionable
     $self->{format}="$self";
     $self->{format} =~ s/(_out)?=.*//;
@@ -61,6 +61,10 @@ sub init{
     %{$self->{symbols}}=reverse $self->get_config("Symbols/$self->{format}.dat");
 #special output functions for single objects
     %{$self->{specials}}=();
+    ($self->{rules}->{local_simple},$self->{rules}->{local_regex})
+	=$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/local_rules");
+    # print 'local simple rules:'; dd $self->{rules}->{local_simple};
+    # print 'local regex rules:'; dd $self->{rules}->{local_regex};
 
 }
 
@@ -144,6 +148,7 @@ sub to_string{
 sub symbol_to_string{
     my $self=shift;
     $_=$_[0];
+    $_=$self->replace_local($_);
     #delete illegal tokens
     s/^[[:^alpha:]]+//;
     s/\W+//g;
@@ -155,6 +160,7 @@ sub symbol_to_string{
 sub number_to_string{
     my $self=shift;
     $_=$_[0];
+    $_=$self->replace_local($_);
     s/[^\d\.]//g;
     /^(\d+|\d*\.\d+|\d+\.\d*)$/ 
 	or die "Number '$_[0]' can't be converted into the format $self->{format}";
@@ -167,14 +173,9 @@ sub number_to_string{
 #format an internal string as an output string 
 sub string_to_string{
     my $self=shift;
-    return "\"$_[0]\"";
+    $_=$self->replace_local($_[0]);
+    return "\"$_\"";
 }
-
-# sub function_to_string{
-#     my $function=shift;
-#     my $args=shift;
-#     return(to_string($function).$fun_brackets[0].to_string($args).$fun_brackets[1])
-# }
 
 #format an operator
 sub operator_to_string{
@@ -224,7 +225,7 @@ sub prefix_operator_to_string{
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
-    return $operator->name.$self->to_string($$args[0],$operator->name,'right');
+    return $self->replace_local($operator->name).$self->to_string($$args[0],$operator->name,'right');
 }
 
 sub postfix_operator_to_string{
@@ -233,7 +234,7 @@ sub postfix_operator_to_string{
     my $operator=shift;
     my $args=shift;
     my $last_prec=shift;
-    return $self->to_string($$args[0],$operator->name,'left').$operator->name;
+    return $self->to_string($$args[0],$operator->name,'left').$self->replace_local($operator->name);
 }
 
 sub infix_operator_to_string{
@@ -242,7 +243,7 @@ sub infix_operator_to_string{
     my $args=shift;
     my $last_prec=shift;
     return $self->to_string($$args[0],$operator->name,'left')
-	.$operator->name
+	.$self->replace_local($operator->name)
 	.$self->to_string($$args[1],$operator->name,'right')
 #join($operator->name, map {$self->to_string($_,$operator->prec)} @$args);
 }
@@ -252,12 +253,42 @@ sub bracket_to_string{
     my $brackets=shift;
     my $args=shift;
     scalar @$args<3 or die "Too many arguments for bracket";
-    return((scalar @$args>1?$self->to_string($args->[0]):'').$brackets->[0].$self->to_string($args->[-1]).$brackets->[1])
+    return(
+	(scalar @$args>1?$self->to_string($args->[0]):'')
+	   .$self->replace_local($brackets->[0])
+	   .$self->to_string($args->[-1])
+	   .$self->replace_local($brackets->[1])
+	)
+}
+
+#use local replacement rules on $_[0] 
+sub replace_local{
+    my $self=shift;
+    my $_=shift;
+    return $self->{rules}->{local_simple}->{$_} if defined $self->{rules}->{local_simple}->{$_};
+    eval(join(';',@{$self->{rules}->{local_regex}}));
+    return $_
+}
+
+#read substitution rules from file $_[0]
+# returns ($simple_rules,$regex_rules)
+#$simple_rules is a hash reference with rules of the form a => b
+#$regex_rules is an array reference with rules of the form s/a/b/
+sub get_rules{
+    my $self=shift;
+    my $file=shift;
+    my $simple_rules={};
+    my $regex_rules=[];
+    -r -f $file or return ($simple_rules,$regex_rules);
+    my @tmp=$self->get_config($file);
+    @$regex_rules=grep(m#s/.*/.*/.*#,@tmp);
+    %$simple_rules=grep(!m#s/.*/.*/.*#,@tmp);
+    return ($simple_rules,$regex_rules)
 }
 
 #return contents of a configuration file
 sub get_config{
-    shift;
+    my $self=shift;
     my $file=shift;
     open(IN,$file) or die "Failed to open $file for reading: $!";
     my $contents='';
@@ -267,7 +298,7 @@ sub get_config{
 	$contents.=$_;
     }
     close IN;
-    my @tmp=split(/=>|,/,$contents);
+    my @tmp=split(/=>|,|;/,$contents);
     return  @tmp;
 }
 

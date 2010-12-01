@@ -19,15 +19,13 @@ sub init{
 }
 
 sub number_to_string{
-    return $_[1];
+    return $_[0]->replace_local($_[1]);
 }
-
 sub symbol_to_string{
-    return $_[1];
+    return $_[0]->replace_local($_[1]);
 }
-
 sub string_to_string{
-    return $_[1];
+    return $_[0]->replace_local($_[1]);
 }
 
 #special latex functions
@@ -53,7 +51,7 @@ sub ratio_as_frac{
     my $args=shift;
     my ($num,$den);
     ($num,$den)=map {$self->to_string($self->fall_through_bracket($_))} @$args;
-    my $string="\\frac{$num}{$den}";
+    my $string=$self->replace_local('\frac')."{$num}{$den}";
     return $string;
 }
 
@@ -65,9 +63,9 @@ sub product{
     #TODO: it would be wise to use operator_to_string here, but first these operators have to be defined
     #TODO: the following check is not sufficient
     if($$args[0]->is eq 'number' and $$args[1]->is eq 'number'){
-	return $self->to_string($$args[0]).'\cdot'.$self->to_string($$args[1]) 
+	return $self->to_string($$args[0]).$self->replace_local('\cdot').$self->to_string($$args[1]) 
     }
-    return $self->to_string($$args[0]).'\*'.$self->to_string($$args[1]) 
+    return $self->to_string($$args[0]).$self->replace_local('\*').$self->to_string($$args[1]) 
 }
 
 #format power (= remove superfluous brackets)
@@ -80,10 +78,10 @@ sub power{
     my $real_args=$self->fall_through_bracket($$args[1]);
     my $arg_str=$self->to_string($real_args);
     if(length $arg_str==1){
-	return $self->to_string($$args[0])."^$arg_str";
+	return $self->to_string($$args[0]).$self->replace_local('^').$arg_str;
     }
     else{
-	return $self->to_string($$args[0])."^{$arg_str}";
+	return $self->to_string($$args[0]).$self->replace_local('^')."{$arg_str}";
     }
 }
 
@@ -95,7 +93,7 @@ sub subscript{
     # $args is a sequence, we have to go one level deeper
     my $real_args=$$args[0]->args;
     my $subscript=$self->to_string($$real_args[1]);
-    return $self->to_string($$real_args[0]).'_'.((length $subscript ==1 )?$subscript:"{$subscript}");
+    return $self->to_string($$real_args[0]).$self->replace_local('_').((length $subscript ==1 )?$subscript:"{$subscript}");
 }
 
 #remove unneeded bracket -> if $_[1] is a bracket (), return its argument
