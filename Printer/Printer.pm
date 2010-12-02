@@ -19,7 +19,7 @@ sub new{
 
 sub init{
     my $self=shift;
-    my %options=@_;
+    %{$self->{options}}=@_;
     #this is very questionable
     $self->{format}="$self";
     $self->{format} =~ s/(_out)?=.*//;
