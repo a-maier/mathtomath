@@ -95,24 +95,25 @@ sub to_string{
     my $tree=shift;
     # say "to_string";
     #dd($tree);
+    # general information collected while parsing the tree
+    my %tree_info=@_;
+    #dd %tree_info;
     # last operator
     # if the current operator has a lower precedence, we need a bracket
-    my $last_op=shift;
-    defined $last_op or $last_op=0;
-    # argument number of last operator
+    defined $tree_info{last_op} or $tree_info{last_op}=0;
     #if the current operator equals the old one, depending on the 
     #associativity we might need a bracket
-    my $arg_num=shift;
-    defined $arg_num or $arg_num=0;
+    # for this we need to know whether we are looking at the left argument or at the right one
+    defined $tree_info{arg_num} or $tree_info{arg_num}='';
     my $string;
     #special treatment for some operators/functions/whatever
     if (defined $self->special_by_name($tree->name)){
-	return &{$self->special_by_name($tree->name)}($self,$tree->name,$tree->args,$last_op)
+	return &{$self->special_by_name($tree->name)}($self,$tree->name,$tree->args,%tree_info)
     }
 
     given($tree->is){
-	when('number') {$string= $self->number_to_string($tree->name)}
-	when('string') {$string= $self->string_to_string($tree->name);}
+	when('number') {($string,%tree_info) = $self->number_to_string($tree->name,%tree_info)}
+	when('string') {($string,%tree_info) = $self->string_to_string($tree->name,%tree_info);}
 	when('symbol') {
 	    my $sym=$tree->name;
 	    if($sym =~ /^\*\*/ and $sym =~ /\*\*$/){
@@ -120,13 +121,13 @@ sub to_string{
 		$tmp =~ s/(^\*\*|\*\*$)//g;
 		$sym = $self->symbol_by_name($tmp) if defined $self->symbol_by_name($tmp);
 	    }
-	    $string= $self->symbol_to_string($sym)
+	    ($string,%tree_info)= $self->symbol_to_string($sym,%tree_info)
 	}
 	when('operator') {
 	    #check whether the operator exists in this format
 	    defined $self->operator_by_name($tree->name) 
 	    or die "Operator '".$tree->name."' does not exist in format $self->{format}";
-	    $string=$self->operator_to_string($self->operator_by_name($tree->name),$tree->args, $last_op,$arg_num);
+	    ($string,%tree_info) =$self->operator_to_string($self->operator_by_name($tree->name),$tree->args,%tree_info);
 	}
 	when('bracket') {
 	    for my $i (0..1){
@@ -136,11 +137,12 @@ sub to_string{
 	    my $brackets;
 	    #check whether the brackets are legal tokens in this format
 	    @$brackets=map {$self->operator_by_name($_)->name} @{$tree->name};
-	    $string= $self->bracket_to_string($brackets,$tree->args)
+	    ($string,%tree_info) = $self->bracket_to_string($brackets,$tree->args)
 	}
 	default {die "Don't know how to format a '$tree->{is}' as a string in format $self->{format}"}
     }
-    return $string;
+    #say $string;
+    return wantarray?($string,%tree_info):$string;
 }
 
 #format a symbol as a string, either ignoring all illegal tokens
@@ -153,7 +155,7 @@ sub symbol_to_string{
     s/^[[:^alpha:]]+//;
     s/\W+//g;
     $_ or die "Symbol '$_[0]' can't be converted into the format $self->{format}, because it does not contain any legal tokens";
-    return $_;
+    return ($_);
 }
 
 #format a number as a string
@@ -167,14 +169,14 @@ sub number_to_string{
     $_=$1;
     if(/^\./){$_='0'.$_}
     elsif(/\.$/){$_.='0'}
-    return $_;
+    return ($_);
 }
 
 #format an internal string as an output string 
 sub string_to_string{
     my $self=shift;
     $_=$self->replace_local($_[0]);
-    return "\"$_\"";
+    return ("\"$_\"");
 }
 
 #format an operator
@@ -182,16 +184,18 @@ sub operator_to_string{
     my $self=shift;
     my $operator=shift;
     my $args=shift;
-    my $last_op=shift;
-    my $arg_num=shift;
+    my %tree_info=@_;
+    #print 'operator_to_string: '; dd %tree_info;
+    my $last_op=$tree_info{last_op};
+    my $arg_num=$tree_info{arg_num};
     my $string;
     if(scalar @$args == 1){
 	#there is one argument, so it has to be either a postfix or a prefix operator
 	if($operator->pos eq 'prefix'){
-	    $string= $self->prefix_operator_to_string($operator,$args);
+	    ($string,%tree_info) = $self->prefix_operator_to_string($operator,$args,%tree_info);
 	}
 	elsif($operator->pos eq 'postfix'){
-	    $string= $self->postfix_operator_to_string($operator,$args);
+	    ($string,%tree_info) = $self->postfix_operator_to_string($operator,$args,%tree_info);
 	}
 	else{
 	    die "Failed to format ".$operator->pos." operator '".$operator->name."' with one argument"
@@ -199,52 +203,72 @@ sub operator_to_string{
     }
     else{
 	#more than one argument, has to be an infix operator
-	$string = $self->infix_operator_to_string($operator,$args);
+	($string,%tree_info) = $self->infix_operator_to_string($operator,$args,%tree_info);
     }
     #check precedence
     my $last_prec=$self->operator_by_name($last_op)->prec;
     
     if ($last_prec > $operator->prec) {$string='('.$string.')'}
     #check associativiy - only important if the previous operator equals the current one
-    elsif($operator->name eq $last_op){
+    elsif($operator->name eq $tree_info{last_op}){
 	if(! defined $operator->assoc){
 	    die "Subsequent occurence of non-associative operator ".$operator->name;
 	}
 	elsif(
-	    (($operator->assoc eq 'right') and ($arg_num eq 'left'))
-	    or (($operator->assoc eq 'left') and ($arg_num eq 'right'))
+	    (($operator->assoc eq 'right') and ($tree_info{arg_num} eq 'left'))
+	    or (($operator->assoc eq 'left') and ($tree_info{arg_num} eq 'right'))
 	    ){#the associativity has changed compared to the input format -> we need a bracket
 	    $string='('.$string.')';
 	}
     }
-    return $string
+    return ($string,%tree_info)
 }
 
 sub prefix_operator_to_string{
     my $self=shift;
     my $operator=shift;
     my $args=shift;
-    my $last_prec=shift;
-    return $self->replace_local($operator->name).$self->to_string($$args[0],$operator->name,'right');
+    my %tree_info=@_;
+    my $string;
+    $tree_info{last_op}=$operator->name;
+    $tree_info{arg_num}='right';
+    ($string,%tree_info)=$self->to_string($$args[0],%tree_info);
+    $string=replace_local($operator->name).$string;
+    return ($string,%tree_info);
 }
 
 sub postfix_operator_to_string{
     my $self=shift;
-
     my $operator=shift;
     my $args=shift;
-    my $last_prec=shift;
-    return $self->to_string($$args[0],$operator->name,'left').$self->replace_local($operator->name);
+    my %tree_info=@_;
+    my $string;
+    $tree_info{last_op}=$operator->name;
+    $tree_info{arg_num}='left';
+    ($string,%tree_info)=$self->to_string($$args[0],%tree_info);
+    $string.=replace_local($operator->name);
+    return ($string,%tree_info);
 }
+
 
 sub infix_operator_to_string{
     my $self=shift;
     my $operator=shift;
     my $args=shift;
-    my $last_prec=shift;
-    return $self->to_string($$args[0],$operator->name,'left')
-	.$self->replace_local($operator->name)
-	.$self->to_string($$args[1],$operator->name,'right')
+    my %tree_info=@_;
+    my (%tree_info_left,%tree_info_right);
+    my ($string_left,$string_right);
+    #left argument
+    $tree_info{last_op}=$operator->name;
+    $tree_info{arg_num}='left';
+    ($string_left,%tree_info_left)= $self->to_string($$args[0],%tree_info);
+    $tree_info{arg_num}='right';
+    ($string_right,%tree_info_right)= $self->to_string($$args[1],%tree_info);
+    %tree_info=$self->merge_info(\%tree_info_left,\%tree_info_right);
+    return (
+	$string_left.$self->replace_local($operator->name).$string_right
+	,%tree_info
+	)
 #join($operator->name, map {$self->to_string($_,$operator->prec)} @$args);
 }
 
@@ -252,13 +276,33 @@ sub bracket_to_string{
     my $self=shift;
     my $brackets=shift;
     my $args=shift;
+    my %tree_info=@_;
+    my $string;
     scalar @$args<3 or die "Too many arguments for bracket";
-    return(
-	(scalar @$args>1?$self->to_string($args->[0]):'')
-	   .$self->replace_local($brackets->[0])
-	   .$self->to_string($args->[-1])
-	   .$self->replace_local($brackets->[1])
-	)
+    if(@$args>1){
+	# we have a function with the function name being $$args[0]
+	my (%tree_info_fun,%tree_info_arg);
+	my ($string_fun,$string_arg);
+	($string_fun,%tree_info_fun)=$self->to_string($$args[0],%tree_info);
+	($string_arg,%tree_info_arg)=$self->to_string($$args[1],%tree_info);
+	%tree_info=$self->merge_info(\%tree_info_fun,\%tree_info_arg);
+	$string=
+	    $string_fun
+	    .$self->replace_local($brackets->[0])
+	    .$string_arg
+	    .$self->replace_local($brackets->[1])
+	    ;
+    }
+    else{
+	#usual bracket
+	($string,%tree_info)=$self->to_string($$args[0],%tree_info);
+	$string=
+	    $self->replace_local($brackets->[0])
+	    .$string
+	    .$self->replace_local($brackets->[1])
+	    ;
+    }
+    return ($string,%tree_info)
 }
 
 #use local replacement rules on $_[0] 
@@ -302,5 +346,8 @@ sub get_config{
     return  @tmp;
 }
 
+#merge information from processing different branches of the tree
+sub merge_info{
+}
 
 1;
