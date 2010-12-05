@@ -22,10 +22,15 @@ my $help_text='TODO';
 our $verbose;
 our $strict;
 
-my $in_format='Generic';
+my @in_formats;
 my @out_formats=();
 
-GetOptions( 'informat|if=s' => \$in_format,
+my ($parser,$tree);
+
+sub get_formats;
+sub print_expression;
+
+GetOptions( 'informat|if=s' => \$in_formats[0],
 	    'outformats|of=s' => \@out_formats,
 	    'strict!' => \$strict,
 	    'verbose!'=> \$verbose,
@@ -47,22 +52,37 @@ if($help){
     exit;
 }
 
-# we decide on our formats at run time,
-# so we require require and don't use use
-eval(require "Parser/$in_format.pm" );
-foreach my $out_format (@out_formats){
-    eval(require "Printer/$out_format.pm");
-}
 
 {
     local $/=undef;
     $_=<>;
 }
 
-#parse syntax tree
-my $parser=new $in_format;
-my $tree=$parser->parse($_)or exit(1);
+#try to determine input format if not given explicitely
+@input_formats = get_formats unless @input_formats;
 
+# we decide on our formats at run time,
+# so we require require and don't use use
+foreach my $out_format (@out_formats){
+    eval(require "Printer/$out_format.pm");
+}
+
+
+
+eval(require "Parser/$in_format.pm" );
+
+foreach my $format (@in_formats){
+    #try to parse syntax tree
+    $parser=$format->new;
+    if($tree=$parser->parse($_)){
+	#we found a working format
+	print_expression($tree);
+	exit(0);
+    };
+}
+
+
+    
 #create output in the desired format
 foreach my $out_format (@out_formats){
     dd $tree;
@@ -71,3 +91,6 @@ foreach my $out_format (@out_formats){
     say $out_str;
 }
 
+sub get_formats{
+    opendir( 
+}
