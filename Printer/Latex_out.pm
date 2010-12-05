@@ -37,6 +37,7 @@ sub bracket_to_string{
 	my $function=shift @$args;
 	given($function->name){
 	    when ('**subscript**'){return $self->subscript($args)}
+	    when ('**sqrt**'){return $self->sqrt($args)}
 	    default {unshift @$args,$function}
 	}
     }
@@ -94,6 +95,15 @@ sub subscript{
     my $real_args=$$args[0]->args;
     my $subscript=$self->to_string($$real_args[1]);
     return $self->to_string($$real_args[0]).$self->replace_local('_').((length $subscript ==1 )?$subscript:"{$subscript}");
+}
+
+#format roots
+sub sqrt{
+    my $self=shift;
+    my $args=shift;
+    die "Don't know how to format **sqrt** with more than one argument in Latex format" if scalar @$args >1;
+    #TODO: roots with sequence as argument
+    return $self->replace_local('\sqrt').'{'.$self->to_string($$args[0]).'}';
 }
 
 #remove unneeded bracket -> if $_[1] is a bracket (), return its argument
