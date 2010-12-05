@@ -310,7 +310,7 @@ sub replace_local{
     my $self=shift;
     my $_=shift;
     return $self->{rules}->{local_simple}->{$_} if defined $self->{rules}->{local_simple}->{$_};
-    eval(join(';',@{$self->{rules}->{local_regex}}));
+    eval(join(';',@{$self->{rules}->{local_regex}})) if defined $self->{rules}->{local_regex};
     return $_
 }
 
