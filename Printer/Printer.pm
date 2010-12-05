@@ -19,7 +19,6 @@ sub new{
 
 sub init{
     my $self=shift;
-    %{$self->{options}}=@_;
     #this is very questionable
     $self->{format}="$self";
     $self->{format} =~ s/(_out)?=.*//;
@@ -63,6 +62,10 @@ sub init{
     %{$self->{specials}}=();
     ($self->{rules}->{local_simple},$self->{rules}->{local_regex})
 	=$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/local_rules");
+#options
+    ($self->{options},undef)
+	=$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/options");
+
     # print 'local simple rules:'; dd $self->{rules}->{local_simple};
     # print 'local regex rules:'; dd $self->{rules}->{local_regex};
 
@@ -108,7 +111,8 @@ sub to_string{
     my $string;
     #special treatment for some operators/functions/whatever
     if (defined $self->special_by_name($tree->name)){
-	return &{$self->special_by_name($tree->name)}($self,$tree->name,$tree->args,%tree_info)
+	($string,%tree_info)=&{$self->special_by_name($tree->name)}($self,$tree->name,$tree->args,%tree_info);
+	return wantarray?($string,%tree_info):$string;
     }
 
     given($tree->is){
