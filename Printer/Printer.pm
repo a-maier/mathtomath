@@ -63,8 +63,8 @@ sub init{
     ($self->{rules}->{local_simple},$self->{rules}->{local_regex})
 	=$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/local_rules");
 #options
-    ($self->{options},undef)
-	=$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/options");
+    %{$self->{options}}
+	=$self->get_config("$ENV{HOME}/.mathtomath/$self->{format}/options");
 
     # print 'local simple rules:'; dd $self->{rules}->{local_simple};
     # print 'local regex rules:'; dd $self->{rules}->{local_regex};
@@ -237,7 +237,7 @@ sub prefix_operator_to_string{
     $tree_info{last_op}=$operator->name;
     $tree_info{arg_num}='right';
     ($string,%tree_info)=$self->to_string($$args[0],%tree_info);
-    $string=replace_local($operator->name).$string;
+    $string=$self->replace_local($operator->name).$string;
     return ($string,%tree_info);
 }
 
@@ -250,7 +250,7 @@ sub postfix_operator_to_string{
     $tree_info{last_op}=$operator->name;
     $tree_info{arg_num}='left';
     ($string,%tree_info)=$self->to_string($$args[0],%tree_info);
-    $string.=replace_local($operator->name);
+    $string.=$self->replace_local($operator->name);
     return ($string,%tree_info);
 }
 
