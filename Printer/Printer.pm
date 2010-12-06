@@ -131,7 +131,7 @@ sub to_string{
 	    #check whether the operator exists in this format
 	    defined $self->operator_by_name($tree->name) 
 	    or die "Operator '".$tree->name."' does not exist in format $self->{format}";
-	    ($string,%tree_info) =$self->operator_to_string($self->operator_by_name($tree->name),$tree->args,%tree_info);
+	    ($string,%tree_info) =$self->operator_to_string($tree->name,$tree->args,%tree_info);
 	}
 	when('bracket') {
 	    for my $i (0..1){
@@ -186,13 +186,15 @@ sub string_to_string{
 #format an operator
 sub operator_to_string{
     my $self=shift;
-    my $operator=shift;
+    my $op_name=shift;
+    my $operator=$self->operator_by_name($op_name);
     my $args=shift;
     my %tree_info=@_;
     #print 'operator_to_string: '; dd %tree_info;
     my $last_op=$tree_info{last_op};
     my $arg_num=$tree_info{arg_num};
     my $string;
+    $tree_info{last_op}=$op_name;
     if(scalar @$args == 1){
 	#there is one argument, so it has to be either a postfix or a prefix operator
 	if($operator->pos eq 'prefix'){
@@ -214,7 +216,7 @@ sub operator_to_string{
     
     if ($last_prec > $operator->prec) {$string='('.$string.')'}
     #check associativiy - only important if the previous operator equals the current one
-    elsif($operator->name eq $tree_info{last_op}){
+    elsif($operator->name eq $last_op){
 	if(! defined $operator->assoc){
 	    die "Subsequent occurence of non-associative operator ".$operator->name;
 	}
@@ -234,7 +236,6 @@ sub prefix_operator_to_string{
     my $args=shift;
     my %tree_info=@_;
     my $string;
-    $tree_info{last_op}=$operator->name;
     $tree_info{arg_num}='right';
     ($string,%tree_info)=$self->to_string($$args[0],%tree_info);
     $string=$self->replace_local($operator->name).$string;
@@ -247,7 +248,6 @@ sub postfix_operator_to_string{
     my $args=shift;
     my %tree_info=@_;
     my $string;
-    $tree_info{last_op}=$operator->name;
     $tree_info{arg_num}='left';
     ($string,%tree_info)=$self->to_string($$args[0],%tree_info);
     $string.=$self->replace_local($operator->name);
@@ -263,7 +263,6 @@ sub infix_operator_to_string{
     my (%tree_info_left,%tree_info_right);
     my ($string_left,$string_right);
     #left argument
-    $tree_info{last_op}=$operator->name;
     $tree_info{arg_num}='left';
     ($string_left,%tree_info_left)= $self->to_string($$args[0],%tree_info);
     $tree_info{arg_num}='right';
