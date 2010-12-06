@@ -25,6 +25,7 @@ my $strict;
 
 my $in_format;
 my @out_formats=();
+my $expression;
 
 sub get_input_formats;
 
@@ -58,7 +59,7 @@ foreach my $out_format (@out_formats){
 
 {
     local $/=undef;
-    $_=<>;
+    $expression=<>;
 }
 
 #parse syntax tree
@@ -66,13 +67,12 @@ if($in_format){
     eval(require "Parser/$in_format.pm" );
     my $parser=$in_format->new;
     say "Parsing $in_format expression" if $verbose;
-    $tree=$parser->parse($_) or exit(1);
+    $tree=$parser->parse($expression) or exit(1);
 }
 else{
     #no input format is given, try all possibilities
     say "Trying to guess input format" if $verbose;
     my @formats=get_input_formats;
-    my $expression=$_;
     foreach my $in_format (@formats){
 	eval(require "Parser/$in_format.pm" );
 	my $parser=$in_format->new;
