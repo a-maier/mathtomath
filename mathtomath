@@ -18,12 +18,15 @@ my $version_number=0.0;
 
 my $help;
 my $help_text='TODO';
+my $tree;
 
-our $verbose;
-our $strict;
+my $verbose;
+my $strict;
 
-my $in_format='Generic';
+my $in_format;
 my @out_formats=();
+
+sub get_input_formats;
 
 GetOptions( 'informat|if=s' => \$in_format,
 	    'outformats|of=s' => \@out_formats,
@@ -35,7 +38,7 @@ GetOptions( 'informat|if=s' => \$in_format,
 @out_formats=('Generic') unless @out_formats;
 @out_formats=(split /,/,join(',',@out_formats));
 @out_formats = map {$_.='_out';ucfirst} @out_formats;
-$in_format=ucfirst $in_format;
+$in_format=ucfirst $in_format if $in_format;
 
 if($version){
     say 'mathtomath version $version_number';
@@ -49,7 +52,6 @@ if($help){
 
 # we decide on our formats at run time,
 # so we require require and don't use use
-eval(require "Parser/$in_format.pm" );
 foreach my $out_format (@out_formats){
     eval(require "Printer/$out_format.pm");
 }
@@ -60,8 +62,29 @@ foreach my $out_format (@out_formats){
 }
 
 #parse syntax tree
-my $parser=new $in_format;
-my $tree=$parser->parse($_)or exit(1);
+if($in_format){
+    eval(require "Parser/$in_format.pm" );
+    my $parser=$in_format->new;
+    say "Parsing $in_format expression" if $verbose;
+    $tree=$parser->parse($_) or exit(1);
+}
+else{
+    #no input format is given, try all possibilities
+    say "Trying to guess input format" if $verbose;
+    my @formats=get_input_formats;
+    my $expression=$_;
+    foreach my $in_format (@formats){
+	eval(require "Parser/$in_format.pm" );
+	my $parser=$in_format->new;
+	#as soon as we can parse the input successfully in one format
+	# we claim to have won
+	if ($tree=$parser->parse($expression)) {
+	    say "Input format: $in_format" if $verbose;
+	    last;
+	}
+    }
+    $tree or die "No suitable input format found for expression"
+}
 
 #create output in the desired format
 foreach my $out_format (@out_formats){
@@ -71,3 +94,11 @@ foreach my $out_format (@out_formats){
     say $out_str;
 }
 
+sub get_input_formats{
+    opendir(my $handle,'Parser') or die "Failed to access directory 'Parser': $!";
+    my @format_files = grep {s/\.pm$//} (grep {!/^Generic\.pm$/} readdir($handle));
+    #make sure Generic format is tried first
+    unshift(@format_files,'Generic');
+    closedir $handle;
+    return @format_files;
+}
