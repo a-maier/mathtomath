@@ -19,7 +19,12 @@ sub init{
 	'/' => \&ratio_as_frac,
 	'*' => \&product,
 	'^' => \&power
+	',' => \&sequence
 	);
+    push(%{$self->{operators}},(
+	'&'	=> Operator->new(name => '&',prec => 100,assoc =>'left'),
+	'\\'	=> Operator->new(name => "\\\\\n",prec => 100,assoc =>'left')
+	 ));
 }
 
 sub number_to_string{
@@ -50,8 +55,19 @@ sub bracket_to_string{
 	}
 	($string_fun,%tree_info_fun)=$self->to_string($function,%tree_info);
     }
-    ($string_arg,%tree_info)=$self->to_string($$args[0],%tree_info);
+
+    #check for non-standard list format
+    if( 
+	$$brackets[0] eq '{'
+	and $$brackets[1] eq '}'
+	and defined $self->{options}->{list_format}
+	){
+	#format this list in a non-standard way (e.g. as a matrix)
+	return $self->matrix_to_string($$args[0],%tree_info)
+    }
     
+    ($string_arg,%tree_info)=$self->to_string($$args[0],%tree_info);
+
     #treat bracket scaling
     if(defined $self->{options}->{bracket_scaling}){
 	given($self->{options}->{bracket_scaling}){
@@ -172,6 +188,70 @@ sub sqrt{
     return ($self->replace_local('\sqrt').'{'.$string.'}',%tree_info);
 }
 
+#format matrix
+sub matrix_to_string{
+    my $self=shift;
+    my $arg=shift;
+    my %tree_info=@_;
+    my $list_format=$self->{options}->{list_format};
+    #change current list level 
+    #0/undef: not inside a list
+    #odd value: 'outer' list; items separated by "\\\\\n"
+    #even value: 'inner' list; items separated by '&'
+    if(defined $tree_info{list_level}){
+	$tree_info{list_level}=1
+    }
+    else{++$tree_info{list_level}}
+    my $list_level=$tree_info{list_level};
+    my $begin_string,$end_string;
+    ($string,%tree_info)=$self->to_string($arg,%tree_info);
+
+    if($list_level % 2){
+	#outer list: we need an environment
+	($begin_string,$end_string)=("\\begin{$list_format}","\\end{$list_format}\n");
+	#array and tabular environments need the number of columns
+	#defined $tree_info{num_columns} or $tree_info{num_columns}=1;
+	$begin_string.='{'.('c' x $tree_info{num_columns}).'}' 
+	    if $list_format =~ /^(array|tabular)$/;
+	$string="$begin_string\n$string\n$end_string";
+	$string='\left('.$string.'right)' if $list_format eq 'array';
+    }
+    #clean up
+    delete $tree_info{num_columns};
+    --$tree_info{list_level};
+    return ($string,%tree_info);
+}
+
+#format sequences ... like usual or like matrix entries
+#in the latter case, use either "\\\\\n" or '&' as separators
+# and return number of columns
+sub sequence{
+    my $self=shift;
+    my $args=shift;
+    my %tree_info=@_;
+    my $string;
+    #usual sequence
+    return $self->operator_to_string($self->operator_by_name(','),$args,%tree_info)
+	unless ((defined $tree_info->{list_level}) and $tree_info->{list_level});
+    
+    #bad luck, we are inside a matrix
+    #how deep?
+    my $list_level=$tree_info{list_level};
+    if($list_level % 2){
+	#an 'outer' level
+	return $self->operator_to_string($self->operator_by_name('\\'),$args,%tree_info)
+    }
+    else{
+	#an 'inner' level
+	($string,$tree_info)= $self->operator_to_string($self->operator_by_name('&'),$args,%tree_info);
+	#there is at least one column in one row
+	$tree_info{num_columns} // $tree_info{num_columns}=1;
+	# we have just added another column
+	++$tree_info{num_columns};
+	return ($string,$tree_info)
+    }
+}
+
 #remove unneeded bracket -> if $_[1] is a bracket (), return its argument
 sub fall_through_bracket{
     my $self=shift;
@@ -207,13 +287,23 @@ sub bracket_size{
 sub merge_info{
     my @tree_infos=@_;
     my $last_bracket_size=-1;
+    my $num_columns=-1;
+    my %result_info;
     foreach (@tree_infos){
 	if(defined $_->{last_bracket_size} and $_->{last_bracket_size}>$last_bracket_size){
 	    $last_bracket_size=$_->{last_bracket_size}
 	}
+	if(defined $_->{num_columns} and $_->{num_columns}>$num_columns){
+	    $num_columns=$_->{num_columns}
+	}
     }
-    return ($last_bracket_size>-1)?(last_bracket_size => $last_bracket_size):()
-	 
+    if($last_bracket_size>-1){
+	$result_info{last_bracket_size}=$last_bracket_size;
+    }
+    if($num_columns>-1){
+	$result_info{num_columns}=$num_columns;
+    }
+    return %result_info;
 }
 
 1;
