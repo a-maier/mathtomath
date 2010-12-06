@@ -18,13 +18,13 @@ sub init{
     %{$self->{specials}}=(
 	'/' => \&ratio_as_frac,
 	'*' => \&product,
-	'^' => \&power
+	'^' => \&power,
 	',' => \&sequence
 	);
-    push(%{$self->{operators}},(
-	'&'	=> Operator->new(name => '&',prec => 100,assoc =>'left'),
-	'\\'	=> Operator->new(name => "\\\\\n",prec => 100,assoc =>'left')
-	 ));
+    $self->{operators}->{'&'}= Operator->new(name => '&',prec => 100,assoc =>'left');
+    $self->{operators}->{'\\'}= Operator->new(name => "\\\\\n",prec => 100,assoc =>'left');
+    $self->{operators}->{'{'}= Operator->new(name => '\{');
+    $self->{operators}->{'}'}= Operator->new(name => '\}');
 }
 
 sub number_to_string{
@@ -58,8 +58,8 @@ sub bracket_to_string{
 
     #check for non-standard list format
     if( 
-	$$brackets[0] eq '{'
-	and $$brackets[1] eq '}'
+	$$brackets[0] eq '\{'
+	and $$brackets[1] eq '\}'
 	and defined $self->{options}->{list_format}
 	){
 	#format this list in a non-standard way (e.g. as a matrix)
@@ -194,6 +194,7 @@ sub matrix_to_string{
     my $arg=shift;
     my %tree_info=@_;
     my $list_format=$self->{options}->{list_format};
+    my $string;
     #change current list level 
     #0/undef: not inside a list
     #odd value: 'outer' list; items separated by "\\\\\n"
@@ -203,18 +204,19 @@ sub matrix_to_string{
     }
     else{++$tree_info{list_level}}
     my $list_level=$tree_info{list_level};
-    my $begin_string,$end_string;
     ($string,%tree_info)=$self->to_string($arg,%tree_info);
 
     if($list_level % 2){
+	my ($begin_string,$end_string);
 	#outer list: we need an environment
-	($begin_string,$end_string)=("\\begin{$list_format}","\\end{$list_format}\n");
+	($begin_string,$end_string)=("\\begin{$list_format}","\\end{$list_format}");
 	#array and tabular environments need the number of columns
 	#defined $tree_info{num_columns} or $tree_info{num_columns}=1;
 	$begin_string.='{'.('c' x $tree_info{num_columns}).'}' 
 	    if $list_format =~ /^(array|tabular)$/;
 	$string="$begin_string\n$string\n$end_string";
-	$string='\left('.$string.'right)' if $list_format eq 'array';
+	$string='\left('.$string.'\right)' if $list_format eq 'array';
+	$string.="\n";
     }
     #clean up
     delete $tree_info{num_columns};
@@ -227,28 +229,29 @@ sub matrix_to_string{
 # and return number of columns
 sub sequence{
     my $self=shift;
+    shift;
     my $args=shift;
     my %tree_info=@_;
     my $string;
     #usual sequence
-    return $self->operator_to_string($self->operator_by_name(','),$args,%tree_info)
-	unless ((defined $tree_info->{list_level}) and $tree_info->{list_level});
+    return $self->operator_to_string(',',$args,%tree_info)
+	unless ((defined $tree_info{list_level}) and $tree_info{list_level});
     
     #bad luck, we are inside a matrix
     #how deep?
     my $list_level=$tree_info{list_level};
     if($list_level % 2){
 	#an 'outer' level
-	return $self->operator_to_string($self->operator_by_name('\\'),$args,%tree_info)
+	return $self->operator_to_string('\\',$args,%tree_info)
     }
     else{
 	#an 'inner' level
-	($string,$tree_info)= $self->operator_to_string($self->operator_by_name('&'),$args,%tree_info);
+	($string,%tree_info)= $self->operator_to_string('&',$args,%tree_info);
 	#there is at least one column in one row
-	$tree_info{num_columns} // $tree_info{num_columns}=1;
+	$tree_info{num_columns} // ($tree_info{num_columns}=1);
 	# we have just added another column
 	++$tree_info{num_columns};
-	return ($string,$tree_info)
+	return ($string,%tree_info)
     }
 }
 
