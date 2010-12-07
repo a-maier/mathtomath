@@ -28,13 +28,24 @@ sub init{
 }
 
 sub number_to_string{
-    return $_[0]->replace_local($_[1]);
+    my $self=shift;
+    my $string=shift;
+    my %tree_info=@_;
+    return ($self->replace_local($string),%tree_info);
 }
+
 sub symbol_to_string{
-    return $_[0]->replace_local($_[1]);
+    my $self=shift;
+    my $string=shift;
+    my %tree_info=@_;
+    return ($self->replace_local($string),%tree_info);
 }
+
 sub string_to_string{
-    return $_[0]->replace_local($_[1]);
+    my $self=shift;
+    my $string=shift;
+    my %tree_info=@_;
+    return ($self->replace_local($string),%tree_info);
 }
 
 sub bracket_to_string{
@@ -46,7 +57,7 @@ sub bracket_to_string{
     my %tree_info_fun=();
     my $string_arg;
     my $string;
-    if(scalar @$args > 1){
+    if(defined $args and scalar @$args > 1){
 	my $function=shift @$args;
         #special latex functions
 	given($function->name){
@@ -63,6 +74,7 @@ sub bracket_to_string{
 	and defined $self->{options}->{list_format}
 	){
 	#format this list in a non-standard way (e.g. as a matrix)
+	#print 'bracket_to_string: ';dd %tree_info;
 	return $self->matrix_to_string($$args[0],%tree_info)
     }
     
@@ -194,24 +206,26 @@ sub matrix_to_string{
     my $arg=shift;
     my %tree_info=@_;
     my $list_format=$self->{options}->{list_format};
-    my $string;
+    my $string='';
     #change current list level 
     #0/undef: not inside a list
     #odd value: 'outer' list; items separated by "\\\\\n"
     #even value: 'inner' list; items separated by '&'
     if(defined $tree_info{list_level}){
-	$tree_info{list_level}=1
+	++$tree_info{list_level}
     }
-    else{++$tree_info{list_level}}
+    else{$tree_info{list_level}=1}
     my $list_level=$tree_info{list_level};
-    ($string,%tree_info)=$self->to_string($arg,%tree_info);
+    #print 'matrix_to_string: ';dd %tree_info;
 
+    ($string,%tree_info)=$self->to_string($arg,%tree_info) if $arg;
+    
     if($list_level % 2){
 	my ($begin_string,$end_string);
 	#outer list: we need an environment
 	($begin_string,$end_string)=("\\begin{$list_format}","\\end{$list_format}");
 	#array and tabular environments need the number of columns
-	#defined $tree_info{num_columns} or $tree_info{num_columns}=1;
+	defined $tree_info{num_columns} or $tree_info{num_columns}=1;
 	$begin_string.='{'.('c' x $tree_info{num_columns}).'}' 
 	    if $list_format =~ /^(array|tabular)$/;
 	$string="$begin_string\n$string\n$end_string";
@@ -219,7 +233,7 @@ sub matrix_to_string{
 	$string.="\n";
     }
     #clean up
-    delete $tree_info{num_columns};
+    delete $tree_info{num_columns} if $list_level % 2;
     --$tree_info{list_level};
     return ($string,%tree_info);
 }
@@ -240,6 +254,7 @@ sub sequence{
     #bad luck, we are inside a matrix
     #how deep?
     my $list_level=$tree_info{list_level};
+    #print "sequence: ";dd %tree_info;
     if($list_level % 2){
 	#an 'outer' level
 	return $self->operator_to_string('\\',$args,%tree_info)

@@ -100,7 +100,6 @@ sub to_string{
     #dd($tree);
     # general information collected while parsing the tree
     my %tree_info=@_;
-    #dd %tree_info;
     # last operator
     # if the current operator has a lower precedence, we need a bracket
     defined $tree_info{last_op} or $tree_info{last_op}=0;
@@ -141,7 +140,7 @@ sub to_string{
 	    my $brackets;
 	    #check whether the brackets are legal tokens in this format
 	    @$brackets=map {$self->operator_by_name($_)->name} @{$tree->name};
-	    ($string,%tree_info) = $self->bracket_to_string($brackets,$tree->args)
+	    ($string,%tree_info) = $self->bracket_to_string($brackets,$tree->args,%tree_info)
 	}
 	default {die "Don't know how to format a '$tree->{is}' as a string in format $self->{format}"}
     }
@@ -190,7 +189,6 @@ sub operator_to_string{
     my $operator=$self->operator_by_name($op_name);
     my $args=shift;
     my %tree_info=@_;
-    #print 'operator_to_string: '; dd %tree_info;
     my $last_op=$tree_info{last_op};
     my $arg_num=$tree_info{arg_num};
     my $string;
