@@ -38,8 +38,8 @@ GetOptions( 'informat|if=s' => \$in_format,
     );
 @out_formats=('Generic') unless @out_formats;
 @out_formats=(split /,/,join(',',@out_formats));
-@out_formats = map {$_.='_out';ucfirst} @out_formats;
-$in_format=ucfirst $in_format if $in_format;
+@out_formats = map {$_.='_out';ucfirst lc} @out_formats;
+$in_format=ucfirst lc $in_format if $in_format;
 
 if($version){
     say 'mathtomath version $version_number';
