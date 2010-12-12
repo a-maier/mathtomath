@@ -38,6 +38,7 @@ sub symbol_to_string{
     my $self=shift;
     my $string=shift;
     my %tree_info=@_;
+    $string='\text{'.$string.'}' if ($self->{options}->{symbols_as_text});
     return ($self->replace_local($string),%tree_info);
 }
 
@@ -249,7 +250,7 @@ sub sequence{
     my $string;
     #usual sequence
     return $self->operator_to_string(',',$args,%tree_info)
-	unless ((defined $tree_info{list_level}) and $tree_info{list_level});
+	unless ($tree_info{list_level});
     
     #bad luck, we are inside a matrix
     #how deep?

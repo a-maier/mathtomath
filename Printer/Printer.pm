@@ -58,13 +58,13 @@ sub init{
 #special output for certain functions
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
     %{$self->{symbols}}=reverse $self->get_config("Symbols/$self->{format}.dat");
+#options
+    %{$self->{options}}
+	=$self->get_config("$ENV{HOME}/.mathtomath/$self->{format}/options");
 #special output functions for single objects
     %{$self->{specials}}=();
     ($self->{rules}->{local_simple},$self->{rules}->{local_regex})
 	=$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/local_rules");
-#options
-    %{$self->{options}}
-	=$self->get_config("$ENV{HOME}/.mathtomath/$self->{format}/options");
 
     # print 'local simple rules:'; dd $self->{rules}->{local_simple};
     # print 'local regex rules:'; dd $self->{rules}->{local_regex};
