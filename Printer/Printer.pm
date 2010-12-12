@@ -63,9 +63,10 @@ sub init{
 	=$self->get_config("$ENV{HOME}/.mathtomath/$self->{format}/options");
 #special output functions for single objects
     %{$self->{specials}}=();
-    ($self->{rules}->{local_simple},$self->{rules}->{local_regex})
-	=$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/local_rules");
-
+    ($self->{rules}->{local_simple},$self->{rules}->{local_regex})=
+	$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/local_rules");
+    $self->{rules}->{global}=
+	$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/global_rules");
     # print 'local simple rules:'; dd $self->{rules}->{local_simple};
     # print 'local regex rules:'; dd $self->{rules}->{local_regex};
 
@@ -349,6 +350,14 @@ sub get_config{
 
 #merge information from processing different branches of the tree
 sub merge_info{
+}
+
+#final formatting for output string
+sub format{
+    my $self=shift;
+    my $_=shift;
+    eval(join(';',@{$self->{rules}->{global}})) if defined $self->{rules}->{global};
+    return $_;
 }
 
 1;
