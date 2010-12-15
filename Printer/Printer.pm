@@ -357,6 +357,15 @@ sub format{
     my $self=shift;
     my $_=shift;
     eval(join(';',@{$self->{rules}->{global}})) if defined $self->{rules}->{global};
+    $_=$self->insert_line_breaks($_) if ($self->{options}->{line_length});
+    return $_;
+}
+
+#insert line breaks after a certain number of characters
+sub insert_line_breaks{
+    my $self=shift;
+    my $_=shift;
+    s/(.{$self->{options}->{line_length}})/$1\n/g;
     return $_;
 }
 
