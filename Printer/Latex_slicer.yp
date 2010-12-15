@@ -1,0 +1,113 @@
+/* Grammar for line breaks in LaTeX */
+#TODO: -matrices
+#       -honouring option values
+#       -keep count of \left and \right
+#       -alignment
+%{
+#use Data::Dump;
+use feature qw(say);
+#add hashes
+sub add{
+    my @hashes=@_;
+    my %res=(string => '', length => 0);
+    foreach my $hash (@hashes){
+    	    $res{string}.=$hash->{string};
+    	    $res{length}+=$hash->{length};
+	    };
+    return \%res;
+};
+my $subscript_size=0.3;
+my $line_break="\\\\\n";
+my $max_line_length=4;
+%}
+
+%token SEPARATOR # where we are allowed to break lines
+%token ANY # basically the whole rest
+
+%nonassoc SUB # '^' '_' 
+%left FRAC
+
+%%
+
+input: /* empty */
+       | expression	{$_[1]->{string}} #just return the string portion
+       | separator	{$_[1]->{string}} #just return the string portion
+;
+
+expression: term
+	    |expression term		{add($_[1],$_[2])}
+	    | expression separator	{
+	      		 		if($_[1]->{length}>$max_line_length){
+						#insert line break
+						$_[1]->{string}.=$line_break;
+						$_[1]->{length}=0;
+						}
+	      		 		add($_[1],$_[2])
+			 		}
+	    
+;
+
+
+term: ANY				{
+      					my %hash=(string=>$_[1],length=> length $_[1]);
+					\%hash
+					}
+      |  FRAC '{' arg '}' '{' arg '}'	{
+      	      	      	      	  	my %hash;
+					$hash{length}=($_[3]->{length}>$_[6]->{length})?$_[3]->{length}:$_[6]->{length};
+					$hash{string}="$_[1]$_[2]$_[3]->{string}$_[4]$_[5]$_[6]->{string}$_[7]";
+					\%hash
+      	      	      	      	  	}
+      |  SUB '{' arg '}'		{
+      	      	      	      	  	my %hash;
+					$hash{length}=$subscript_size*$_[3]->{length};
+					$hash{string}="$_[1]$_[2]$_[3]->{string}$_[4]";
+					\%hash
+      	      	      	      	  	}
+;
+
+arg: term
+     |separator
+     |arg term		{add($_[1],$_[2])}
+     |arg separator	{add($_[1],$_[2])}
+;
+
+separator: SEPARATOR	{
+      			my %hash=(string=>$_[1],length=> length $_[1]);
+			\%hash
+			}
+;
+%%
+
+sub _error {
+    if(exists $_[0]->YYData->{ERRMSG}) {
+	print $_[0]->YYData->{ERRMSG};
+        delete $_[0]->YYData->{ERRMSG};
+        return;
+    };	
+    print "Syntax error.\n";
+}
+
+sub _lexer {
+    my $parser =shift;
+    
+    return('',undef) unless $parser->YYData->{INPUT};
+    for ($parser->YYData->{INPUT}) {
+    	return('FRAC',$1) if s/^(\\frac)//;
+	return('SEPARATOR',$1) if s/^($parser->{separator})//;
+	return('SUB',$1) if s/^([\^_])//;
+	return($1,$1) if s/^([\{\}])//;
+        return('ANY',$1) if s/^(.)//;
+    }
+}
+
+sub parse {
+    my $self=shift;
+    my $data=shift;
+    $self->{separator}=shift;
+    for ($data){
+	$self->YYData->{INPUT} = $_
+    }
+    $self->YYParse( yylex => \&_lexer, yyerror => \&_error );
+}
+
