@@ -1,4 +1,4 @@
-/* This is the grammar for general mathematical formulas */
+/* This is the grammar for LaTeX */
 %{
 #use Data::Dump;
 use feature qw(state say);
