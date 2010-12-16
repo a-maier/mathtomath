@@ -281,6 +281,7 @@ sub bracket_to_string{
     my %tree_info=@_;
     my $string;
     scalar @$args<3 or die "Too many arguments for bracket";
+    $tree_info{last_op}=0;
     if(@$args>1){
 	# we have a function with the function name being $$args[0]
 	my (%tree_info_fun,%tree_info_arg);
