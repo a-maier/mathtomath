@@ -58,6 +58,7 @@ sub bracket_to_string{
     my %tree_info_fun=();
     my $string_arg;
     my $string;
+    $tree_info{last_op}=0;
     if(defined $args and scalar @$args > 1){
 	my $function=shift @$args;
         #special latex functions
@@ -323,6 +324,18 @@ sub merge_info{
 	$result_info{num_columns}=$num_columns;
     }
     return %result_info;
+}
+
+#insert line breaks after a certain number of characters
+sub insert_line_breaks{
+    my $self=shift;
+    my $_=shift;
+    #$_ or return $_;
+    use Printer::Latex_slicer;
+    my $parser= Latex_slicer->new;
+    $parser->init($self->{options});
+    $_=$parser->parse($_) or die "Internal error: failed to parse output string"; 
+    return $_;
 }
 
 1;
