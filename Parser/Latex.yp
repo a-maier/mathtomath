@@ -181,7 +181,7 @@ sub _lexer {
 	return('ID',$1) if s/^(\\equiv)//;
 	return('CBO',$1) if s/^(\\\{)//;
 	return('CBC',$1) if s/^(\\\})//;
-	if(s/^(\\begin\{(array|tabular|(p|b|B|v|V|small)?matrix)\})//){
+	if(s/^(\\begin\{(array|tabular|(p|b|B|v|V|small)?matrix)\}(\{[lcr]*\})?)//){
 		++$in_matrix_env;
 		return('BEGMATRIX',$1) 
 		}
