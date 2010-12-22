@@ -95,6 +95,7 @@ sub init{
 #special output for certain functions
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
     %{$self->{symbols}}=reverse $self->get_config("Symbols/$self->{format}.dat");
+    %{$self->{greek_symbols}}=$self->get_config("Symbols/Greek.dat");;
 #special output functions for single objects
     %{$self->{specials}}=();
 }
@@ -128,6 +129,13 @@ sub bracket_to_string{
 sub symbol_to_string{
     my $self=shift;
     $_=$_[0];
+    #greek letters
+    if(/^\*\*(.*)\*\*$/ and $self->{greek_symbols}->{$1}){
+	s/^\*\*|\*\*$//g;
+	$_="Capital".$_ if /^[A-Z]/;
+	$_='\['.(ucfirst).']';
+	return $self->replace_local($_);
+    }
     #if it contains illegal tokens, we transform it into a string
     return $self->string_to_string($_[0]) unless /^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)$/;
     return $self->replace_local($_);
