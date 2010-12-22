@@ -9,10 +9,11 @@ use feature qw(say);
 #add hashes
 sub add{
     my @hashes=@_;
-    my %res=(string => '', length => 0);
+    my %res=(string => '', length => 0, num_left=>0);
     foreach my $hash (@hashes){
     	    $res{string}.=$hash->{string};
     	    $res{length}+=$hash->{length};
+	    $res{num_left}+=$hash->{num_left} if defined $hash->{num_left};
 	    };
     return \%res;
 };
@@ -20,6 +21,8 @@ sub add{
 
 %token BEGMATRIX	#begin matrix environment
 %token ENDMATRIX	#end matrix environment
+%token LEFT		#\left
+%token RIGHT		#\right
 %token SEPARATOR 	# where we are allowed to break lines
 %token ANY 		# basically the whole rest
 
@@ -36,11 +39,19 @@ input: /* empty */
 
 expression: term
 	    |expression term		{add($_[1],$_[2])}
+	    |expression left		{add($_[1],$_[2])}
+	    |expression right		{add($_[1],$_[2])}
 	    | expression separator	{
 	      		 		if($_[1]->{length}>$_[0]->{line_length}){
 						#insert line break
+						#make sure that all \lefts are closed
+						$_[1]->{string}.=('\right.' x $_[1]->{num_left}) 
+							if defined $_[1]->{num_left};
+						#line break
 						$_[1]->{string}.="$_[0]->{line_break}\n";
 						$_[1]->{length}=0;
+						$_[1]->{string}.=('\left.' x $_[1]->{num_left}) 
+							if defined $_[1]->{num_left};
 						}
 	      		 		add($_[1],$_[2])
 			 		}
@@ -87,12 +98,26 @@ arg: term
      |separator
      |arg term		{add($_[1],$_[2])}
      |arg separator	{add($_[1],$_[2])}
+     |arg left		{add($_[1],$_[2])}
+     |arg right		{add($_[1],$_[2])}
 ;
 
 separator: SEPARATOR	{
       			my %hash=(string=>$_[1],length=> length $_[1]);
 			\%hash
 			}
+;
+
+left: LEFT	{
+    		my %hash=(string=>$_[1],length=> 0,num_left=>1);
+		\%hash
+      		}
+;
+
+right: RIGHT	{
+    		my %hash=(string=>$_[1],length=> 0,num_left=>-1);
+		\%hash
+      		}
 ;
 %%
 
@@ -113,8 +138,10 @@ sub _lexer {
 	return('SEPARATOR',$1) if s/^($parser->{line_break_at})//;
 	return('SUB',$1) if s/^([\^_])//;
 	return($1,$1) if s/^([\{\}])//;
-	return('BEGMATRIX',$1) if(s/^(\\begin\{(array|tabular|(p|b|B|v|V|small)?matrix)\}(\{[lcr]*\})?)//);
-	return('ENDMATRIX',$1) if(s/^(\\end\{(array|tabular|(p|b|B|v|V|small)?matrix)\})//);
+	return('BEGMATRIX',$1) if s/^(\\begin\{(array|tabular|(p|b|B|v|V|small)?matrix)\}(\{[lcr]*\})?)//;
+	return('ENDMATRIX',$1) if s/^(\\end\{(array|tabular|(p|b|B|v|V|small)?matrix)\})//;
+	return('LEFT',$1) if s/^(\\left)//;
+	return('RIGHT',$1) if s/^(\\right)//;
 	return('ENDROW',$1) if(s/^(\\\\)//);
         return('ANY',$1) if s/^(.)//s;
     }
