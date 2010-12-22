@@ -69,12 +69,26 @@ term: ANY				{
 					$hash{string}="$_[1]$_[2]$_[3]->{string}$_[4]$_[5]$_[6]->{string}$_[7]";
 					\%hash
       	      	      	      	  	}
+      |  FRAC ANY ANY			{
+      	      	      	      	  	my %hash;
+					$hash{length}=1;
+					$hash{string}="$_[1]$_[2]$_[3]";
+					\%hash
+      	      	      	      	  	}
+
       |  SUB '{' arg '}'		{
       	      	      	      	  	my %hash;
 					$hash{length}=$_[0]->{subscript_size}*$_[3]->{length};
 					$hash{string}="$_[1]$_[2]$_[3]->{string}$_[4]";
 					\%hash
       	      	      	      	  	}
+      |  SUB ANY		    	{
+      	      	      	      	  	my %hash;
+					$hash{length}=$_[0]->{subscript_size};
+					$hash{string}="$_[1]$_[2]";
+					\%hash
+      	      	      	      	  	}
+
       | BEGMATRIX matrixarg ENDMATRIX		{
       	      	      	      	  	my %hash;
 					$hash{length}=$_[2]->{length};
@@ -143,7 +157,7 @@ sub _lexer {
 	return('LEFT',$1) if s/^(\\left)//;
 	return('RIGHT',$1) if s/^(\\right)//;
 	return('ENDROW',$1) if(s/^(\\\\)//);
-        return('ANY',$1) if s/^(.)//s;
+        return('ANY',$1) if s/^(\\[[:alpha:]]*|.)//s;
     }
 }
 
