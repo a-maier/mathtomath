@@ -115,13 +115,21 @@ sub ratio_as_frac{
     my %tree_info=@_;
     my (%tree_info_num,%tree_info_den);
     my ($num,$den);
-    ($num,%tree_info_num)=$self->to_string($self->fall_through_bracket($$args[0]));
+    $num=$self->fall_through_bracket($$args[0]);
+    #-x/y should be formatted as -\frac{x}{y}, not \frac{-x}{y}
+    my $uminus=0;
+    if($num->name eq '-' and @{$num->args}==1){
+	$num=$num->args->[0];
+	$uminus=1;
+    }
+    ($num,%tree_info_num)=$self->to_string($num);
     ($den,%tree_info_den)=$self->to_string($self->fall_through_bracket($$args[1]));
     %tree_info=$self->merge_info(\%tree_info_num,\%tree_info_den);
     if(!defined $tree_info{last_bracket_size} or $tree_info{last_bracket_size}<$frac_bracket_size){
 	$tree_info{last_bracket_size}=$frac_bracket_size
     }
     my $string=$self->replace_local('\frac')."{$num}{$den}";
+    if($uminus){$string='-'.$string}
     return ($string,%tree_info);
 }
 

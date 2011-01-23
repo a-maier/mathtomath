@@ -1,7 +1,6 @@
 /* Grammar for line breaks in LaTeX */
 #TODO:
-#       -honouring option values
-#       -keep count of \left and \right
+#       -option values
 #       -alignment
 %{
 use Data::Dump;
@@ -34,13 +33,13 @@ sub add{
 
 input: /* empty */
        | expression	{$_[1]->{string}} #just return the string portion
-       | separator	{$_[1]->{string}} #just return the string portion
 ;
 
 expression: term
-	    |expression term		{add($_[1],$_[2])}
-	    |expression left		{add($_[1],$_[2])}
-	    |expression right		{add($_[1],$_[2])}
+	    | separator
+	    | expression term		{add($_[1],$_[2])}
+	    | expression left		{add($_[1],$_[2])}
+	    | expression right		{add($_[1],$_[2])}
 	    | expression separator	{
 	      		 		if($_[1]->{length}>$_[0]->{line_length}){
 						#insert line break
@@ -55,6 +54,7 @@ expression: term
 						}
 	      		 		add($_[1],$_[2])
 			 		}
+					
 	    
 ;
 
@@ -157,7 +157,7 @@ sub _lexer {
 	return('LEFT',$1) if s/^(\\left)//;
 	return('RIGHT',$1) if s/^(\\right)//;
 	return('ENDROW',$1) if(s/^(\\\\)//);
-        return('ANY',$1) if s/^(\\[[:alpha:]]*|.)//s;
+	return('ANY',$1) if s/^(\\[[:alpha:]]*|.)//s;
     }
 }
 
