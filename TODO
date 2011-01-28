@@ -1,0 +1,11 @@
+- documentation (pod?)
+- automated tests
+- design consistent and comprehensive list of internal operators
+- decide what to do with comments
+- improve option/rule format (allow whitespace and ',' ...)
+- options/rules via cli
+- options for different levels of verbosity and strictness
+- input hinting (please enter ...)
+- implement numbers with fixed precision/accuracy
+- improve structure/infrastructure
+- Latex option for different alignments after line breaks

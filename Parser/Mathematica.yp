@@ -1,8 +1,6 @@
 /* This is the grammar for Mathematica */
 /*
 TODO: 
-      - comments: (* *)
-      - numeric precision, different bases
       - improve support for named characters
 */
 %{

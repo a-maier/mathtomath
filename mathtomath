@@ -1,8 +1,4 @@
 #!/usr/bin/perl
-# - input hinting (please enter ...)
-# - run time including modules properly?
-# - fix multiple output formats
-# - tests
 use 5.10.1;
 use warnings;
 use strict;

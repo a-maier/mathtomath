@@ -1,7 +1,4 @@
 /* Grammar for line breaks in LaTeX */
-#TODO:
-#       -option values
-#       -alignment
 %{
 use Data::Dump;
 use feature qw(say);
