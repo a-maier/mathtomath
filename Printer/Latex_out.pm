@@ -142,6 +142,7 @@ sub product{
     my $string;
     my ($string_left,$string_right);
     my (%tree_info_left,%tree_info_right);
+    $tree_info{last_op}='*';
     ($string_left,%tree_info_left)=$self->to_string($$args[0],%tree_info);
     ($string_right,%tree_info_right)=$self->to_string($$args[1],%tree_info);
     %tree_info=$self->merge_info(\%tree_info_left,\%tree_info_right);
@@ -166,6 +167,7 @@ sub power{
     my $op=shift;
     my $args=shift;
     my %tree_info=@_;
+    $tree_info{last_op}='^';
     #dd $$args[0];
     my $real_args=$self->fall_through_bracket($$args[1]);
     my $arg_str=$self->to_string($real_args,%tree_info);
