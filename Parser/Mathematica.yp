@@ -73,7 +73,7 @@ my %special_symbols=Printer->get_config('Symbols/Mathematica.dat');
 #%right DIFFERENCEDELTA DISCRETERATIO DEL D
 #%right INTEGRATE
 %right SQRT # \@ \@expr1\%expr2
-# EXP is formally not correct here, but I hope it is not ambiguos
+# EXP is formally not correct here, but I hope it is not ambiguous
 %right '^' EXP # ^ *^ #expr1\^expr2\%expr3 is (expr1_expr3)^expr2
 %left STRINGJOIN # <>
 %left '\''
