@@ -82,7 +82,7 @@ else{
 
 #create output in the desired format
 foreach my $out_format (@out_formats){
-    dd $tree;
+    #dd $tree;
     my $printer=${out_format}->new;
     my $out_str=$printer->to_string($tree);
     $out_str=$printer->format($out_str);
