@@ -17,7 +17,8 @@ my %special_symbols=Printer->get_config('Symbols/Generic.dat');
 %left '*' '/'
 %left '^'
 %nonassoc '.'
-%nonassoc WILDCARD UMINUS
+%nonassoc UMINUS
+%nonassoc WILDCARD
 %%
 
 input: /* empty */
@@ -60,7 +61,7 @@ relation:	term '=' term	{Expression->new(name =>$_[2],is => 'operator',args => [
 
 operation:	'+' term			{$_[2]}
 		| term '+' term 		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-		| '-' term	%prec UMINUS	{Expression->new(name =>$_[1],is => 'operator',args => [$_[2]])}
+		| '-' term	%prec UMINUS	{Expression->new(name =>'u-',is => 'operator',args => [$_[2]])}
 		| term ';' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term ';'			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1]])}
 		| term '-' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}

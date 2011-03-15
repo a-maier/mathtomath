@@ -174,7 +174,7 @@ operation:	term ';' term		{Expression->new(name =>$_[2],is => 'operator',args =>
 		| term '\\' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term DIVIDE term		{Expression->new(name =>'/',is => 'operator',args => [$_[1],$_[3]])}
 		| '+' term %prec UPLUSMINUS	{$_[2]}
-		| '-' term %prec UPLUSMINUS	{Expression->new(name =>$_[1],is => 'operator',args => [$_[2]])}
+		| '-' term %prec UPLUSMINUS	{Expression->new(name =>'u-',is => 'operator',args => [$_[2]])}
 		| term '.' term			{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term NCMULTIPLY term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| SQRT term			{
