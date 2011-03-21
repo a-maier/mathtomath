@@ -1,10 +1,28 @@
 #!/usr/bin/perl
+
+=head1 NAME
+
+mathtomath - Convert mathematical expressions between different formats
+
+=head1 SYNOPSIS
+
+B<mathtomath> [options] [input files]
+
+=head1 DESCRIPTION
+
+mathtomath reads mathematical expressions from the input files (or from STDIN if no files are specified) and displays the corresponding expressions in one or more custom formats. 
+
+Usually you will want to specify at least one output format with the I<L</-outformat>> option - if you don't a default output format will be chosen. It is also recommended (although not mandatory) to specify the format of the input expressions with the I<L</-informat>> option.
+
+=cut
+
 use 5.10.1;
 use warnings;
 use strict;
 use Data::Dump;
 use Expression;
 use Getopt::Long;
+#change this
 use Printer::Printer;
 
 my $version;
@@ -23,8 +41,44 @@ my $expression;
 
 sub get_input_formats;
 
+=head1 OPTIONS
+
+=over 2
+
+=item B<-?>, B<-help>        
+       Display a short help message and exit
+
+=item B<-expression>, B<-e> I<expression> 
+       Use I<expression> as input expression instead of reading from input files or standard input.
+
+=item B<-informat>, B<-if> I<format> 
+       Specify the format of the input expressions. The currently supported formats are B<FORM>, B<LaTeX>, B<Mathematica> and a default format (B<generic>). Format names are case-insensitive. If no input format is specified, B<mathtomath> will try all available formats in a random order. This can lead to ambiguities; (have a look at the L</EXPAMPLES>)
+
+=item B<-outformat>, B<-of> I<outformat1[,outformat2,...]> 
+       Specify one or more formats to which the input expressions will be converted. The currently supported formats are B<FORM>, B<LaTeX>, B<Mathematica> and a default format (B<generic>). Format names are case-insensitive.
+
+=item B<-o>, B<-options> I<option1=value1[,option2=value2,...]>
+      B<TODO> Specify options for the formatting of the output. The supported options depend on the chosen output formats. See the manual B<TODO:Link> for more details
+
+=item B<-quiet>
+       B<TODO> Suppress output messages.
+
+=item B<-strict>
+       B<TODO> Fail if there are ambiguities in the conversion. This is actually quite common and without this option mathtomath will still try do construct a somewhat sensible output expression.
+
+=item B<-verbose>
+       Explain what is happening.
+
+=item B<-version>
+       Display version number and exits
+
+=back
+
+=cut
+
 GetOptions( 'informat|if=s' => \$in_format,
 	    'outformats|of=s' => \@out_formats,
+	    'expression|e=s' => \$expression,
 	    'strict!' => \$strict,
 	    'verbose!'=> \$verbose,
 	    'help|?'=> \$help,
@@ -46,12 +100,12 @@ if($help){
 }
 
 # we decide on our formats at run time,
-# so we require require and don't use use
+# so we require require and don't use use?
 foreach my $out_format (@out_formats){
     eval(require "Printer/$out_format.pm");
 }
 
-{
+if(!defined $expression){
     local $/=undef;
     $expression=<>;
 }
@@ -97,3 +151,37 @@ sub get_input_formats{
     closedir $handle;
     return @format_files;
 }
+
+=head1 EXAMPLES
+
+Convert the formula for the area of a square from B<Mathematica> convention to B<LaTeX>:
+mathtomath -if Mathematica -of LaTeX -e 'Pi*r^2'
+
+Not specifying an input format can lead to undefined results. This may in principle result to (v.v)^2, but also to v.(v^2):
+mathtomath -e 'v.v^2'
+
+This reads expressions from a file and adds line breaks after approximately 40 characters to the B<LaTeX> output:
+mathtomath -if Mathematica -of Latex -o 'line_length=40' F<file_with_long_expressions>
+
+=head1 FILES
+
+=over 2
+
+=item B<.mathtomath> Directory containing configuration files
+
+=back
+
+=head1 BUGS
+
+Too many to list. Please report bugs to B<TODO>.
+
+=head1 SEE ALSO
+
+B<TODO> manual, format modules, github, cpan
+
+=head1 AUTHOR
+
+B<TODO> we
+
+
+
