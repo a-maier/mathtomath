@@ -13,7 +13,6 @@ our @EXPORT_OK = qw(Parser);
 use Module::Pluggable (
     search_path => 'Math::ToMath::Parser',
     sub_name    => '_get_parsers',
-    'require'   => 1,
     inner       => 0,
 );
 
@@ -21,6 +20,12 @@ use Module::Pluggable (
 sub get_parsers {
     my $class = shift;
     my @parsers = $class->_get_parsers(@_);
+    foreach my $parser (@parsers) {
+        if (not eval "require $parser; 1;") {
+            my $err = $@ || "Zombie error";
+            die "Couldn't require '$parser': $err";
+        }
+    }
     my $generic = __PACKAGE__ . "::Generic";
     my @nongeneric = grep $_ ne $generic, @parsers;
     if (@nongeneric == @parsers) {
