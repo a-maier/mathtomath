@@ -181,14 +181,20 @@ sub get_input_formats{
 
 =head1 EXAMPLES
 
-Convert the formula for the area of a square from B<Mathematica> convention to B<LaTeX>:
-mathtomath -if Mathematica -of LaTeX -e 'Pi*r^2'
+Convert the formula for the area of a square from B<Mathematica> convention
+to B<LaTeX>:
 
-Not specifying an input format can lead to undefined results. This may in principle result to (v.v)^2, but also to v.(v^2):
-mathtomath -e 'v.v^2'
+  mathtomath -if Mathematica -of LaTeX -e 'Pi*r^2'
 
-This reads expressions from a file and adds line breaks after approximately 40 characters to the B<LaTeX> output:
-mathtomath -if Mathematica -of Latex -o 'line_length=40' F<file_with_long_expressions>
+Not specifying an input format can lead to undefined results.
+This may in principle result to (C<v.v)^2>, but also to C<v.(v^2)>:
+
+  mathtomath -e 'v.v^2'
+
+This reads expressions from a file and adds line breaks after
+approximately 40 characters to the B<LaTeX> output:
+
+  mathtomath -if Mathematica -of Latex -o 'line_length=40' F<file_with_long_expressions>
 
 =head1 FILES
 
@@ -206,9 +212,11 @@ Too many to list. Please report bugs to B<TODO>.
 
 B<TODO> manual, format modules, github, cpan
 
+L<https://github.com/a-maier/mathtomath>
+
 =head1 AUTHOR
 
 B<TODO> we
 
-
+=cut
 
