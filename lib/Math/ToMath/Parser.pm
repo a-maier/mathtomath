@@ -17,5 +17,12 @@ use Module::Pluggable (
     inner       => 0,
 );
 
+sub get_parser {
+    my $class = shift;
+    my $name = shift;
+    my @matching = grep /::\Q$name\E$/, $class->get_parsers;
+    return $matching[0];
+}
+
 1;
 
