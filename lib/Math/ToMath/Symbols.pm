@@ -53,7 +53,8 @@ at your option, any later version of Perl 5 you may have available.
 sub get_symbol_file_for_class {
     my $self  = shift;
     my $class = shift;
-    $class =~ /::([^:]+)$/
+    # Match Foo in Bar::Foo or in Foo but not in BarFoo
+    $class =~ /(?:^|:)([^:]+)$/
         or die "Cannot find symbol name for class '$class'";
     my $symbol_file = File::Spec->catfile("Symbols", $1 . ".dat");
     return dist_file('Math-ToMath', $symbol_file);
