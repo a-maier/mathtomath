@@ -25,7 +25,7 @@ with the I<L</-informat>> option.
 use 5.10.1;
 use warnings;
 use strict;
-use Math::ToMath;
+use Math::ToMath qw(:all);
 use Data::Dump;
 use Expression;
 use Getopt::Long;
@@ -137,18 +137,19 @@ if(!defined $expression){
 
 #parse syntax tree
 if($in_format){
-    eval(require "Parser/$in_format.pm" );
-    my $parser=$in_format->new;
+    my $parser_class = Parser->get_parser($in_format);
+    my $parser=$parser_class->new;
     say "Parsing $in_format expression" if $verbose;
     $tree=$parser->parse($expression) or exit(1);
 }
 else{
     #no input format is given, try all possibilities
     say "Trying to guess input format" if $verbose;
-    my @formats=get_input_formats();
-    foreach my $in_format (@formats){
-	eval(require "Parser/$in_format.pm" );
-	my $parser=$in_format->new;
+    my @parser_classes = Parser->get_parsers();
+    foreach my $parser_class (@parser_classes){
+	my $parser=$parser_class->new;
+        my $in_format = $parser_class;
+        $in_format =~ s/^Math::ToMath::Parser:://;
 	#as soon as we can parse the input successfully in one format
 	# we claim to have won
 	if ($tree=$parser->parse($expression)) {
@@ -162,7 +163,7 @@ else{
 #create output in the desired format
 foreach my $out_format (@out_formats){
     #dd $tree;
-    my $printer=${out_format}->new;
+    my $printer=$out_format->new;
     my $out_str=$printer->to_string($tree);
     $out_str=$printer->format($out_str);
     say $out_str;
