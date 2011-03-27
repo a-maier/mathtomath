@@ -10,21 +10,27 @@ B<mathtomath> [options] [input files]
 
 =head1 DESCRIPTION
 
-mathtomath reads mathematical expressions from the input files (or from STDIN if no files are specified) and displays the corresponding expressions in one or more custom formats. 
+I<mathtomath> reads mathematical expressions from the input files
+(or from STDIN if no files are specified) and displays the
+corresponding expressions in one or more custom formats. 
 
-Usually you will want to specify at least one output format with the I<L</-outformat>> option - if you don't a default output format will be chosen. It is also recommended (although not mandatory) to specify the format of the input expressions with the I<L</-informat>> option.
+Usually you will want to specify at least one output format
+with the I<L</-outformat>> option - if you don't a default
+output format will be chosen. It is also recommended (although
+not mandatory) to specify the format of the input expressions
+with the I<L</-informat>> option.
 
 =cut
 
 use 5.10.1;
 use warnings;
 use strict;
+use Math::ToMath;
 use Data::Dump;
 use Expression;
 use Getopt::Long;
 #change this
 use Printer::Printer;
-use Math::ToMath;
 
 my $version;
 
@@ -36,7 +42,7 @@ my $verbose;
 my $strict;
 
 my $in_format;
-my @out_formats=();
+my @out_formats;
 my $expression;
 
 sub get_input_formats;
@@ -46,31 +52,52 @@ sub get_input_formats;
 =over 2
 
 =item B<-?>, B<-help>        
-       Display a short help message and exit
+
+Display a short help message and exit
 
 =item B<-expression>, B<-e> I<expression> 
-       Use I<expression> as input expression instead of reading from input files or standard input.
+
+Use I<expression> as input expression instead of reading from
+input files or standard input.
 
 =item B<-informat>, B<-if> I<format> 
-       Specify the format of the input expressions. The currently supported formats are B<FORM>, B<LaTeX>, B<Mathematica> and a default format (B<generic>). Format names are case-insensitive. If no input format is specified, B<mathtomath> will try all available formats in a random order. This can lead to ambiguities; (have a look at the L</EXPAMPLES>)
+
+Specify the format of the input expressions. The currently supported
+formats are B<FORM>, B<LaTeX>, B<Mathematica> and a default format
+(B<generic>). Format names are case-insensitive. If no input format is
+specified, B<mathtomath> will try all available formats in a random
+order. This can lead to ambiguities. (have a look at the L</EXAMPLES>)
 
 =item B<-outformat>, B<-of> I<outformat1[,outformat2,...]> 
-       Specify one or more formats to which the input expressions will be converted. The currently supported formats are B<FORM>, B<LaTeX>, B<Mathematica> and a default format (B<generic>). Format names are case-insensitive.
+
+Specify one or more formats to which the input expressions
+will be converted. The currently supported formats are
+B<FORM>, B<LaTeX>, B<Mathematica> and a default format
+(B<generic>). Format names are case-insensitive.
 
 =item B<-o>, B<-options> I<option1=value1[,option2=value2,...]>
-      B<TODO> Specify options for the formatting of the output. The supported options depend on the chosen output formats. See the manual B<TODO:Link> for more details
+
+B<TODO> Specify options for the formatting of the output. The
+supported options depend on the chosen output formats. See
+the manual B<TODO:Link> for more details
 
 =item B<-quiet>
-       B<TODO> Suppress output messages.
+
+B<TODO> Suppress output messages.
 
 =item B<-strict>
-       B<TODO> Fail if there are ambiguities in the conversion. This is actually quite common and without this option mathtomath will still try do construct a somewhat sensible output expression.
+
+B<TODO> Fail if there are ambiguities in the conversion. This
+is actually quite common and without this option I<mathtomath>
+will still try do construct a somewhat sensible output expression.
 
 =item B<-verbose>
-       Explain what is happening.
+
+Explain what is happening.
 
 =item B<-version>
-       Display version number and exits
+
+Display version number and exits
 
 =back
 
@@ -86,7 +113,7 @@ GetOptions( 'informat|if=s' => \$in_format,
     );
 @out_formats=('Generic') unless @out_formats;
 @out_formats=(split /,/,join(',',@out_formats));
-@out_formats = map {$_.='_out';ucfirst lc} @out_formats;
+@out_formats = map ucfirst(lc($_."_out")), @out_formats;
 $in_format=ucfirst lc $in_format if $in_format;
 
 if($version){
