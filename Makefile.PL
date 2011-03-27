@@ -53,7 +53,7 @@ HERE
         my $action = <<ACTION;
 	\$(MKPATH) $grammar_spec->{outdir}
 	yapp -o $grammar_spec->{outfile} $grammar_spec->{infile}
-	\$(PERLRUN) -i -pe \"s/package\s+$grammar_spec->{basename}\s*;/package $grammar_spec->{classname};/\" $grammar_spec->{outfile}
+	\$(PERLRUN) -i -pe \"s/package\\s+$grammar_spec->{basename}\\s*;/package $grammar_spec->{classname};/\" $grammar_spec->{outfile}
 ACTION
         $make_code .= $action;
     }
