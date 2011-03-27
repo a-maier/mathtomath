@@ -4,9 +4,10 @@ TODO:
       - improve support for named characters
 */
 %{
+use Math::ToMath qw(:all);
 #use Data::Dump;
 use Printer::Printer;
-my %special_symbols=Printer->get_config('Symbols/Mathematica.dat');
+my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 %}
 
 %token NUMBER

@@ -1,9 +1,10 @@
 /* This is the grammar for general mathematical formulas */
 %{
+use Math::ToMath qw(:all);
 #use Data::Dump;
 use Printer::Printer;
 #special symbols
-my %special_symbols=Printer->get_config('Symbols/Generic.dat');
+my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 %}
 
 %token NUMBER

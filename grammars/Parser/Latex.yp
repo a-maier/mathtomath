@@ -1,9 +1,10 @@
 /* This is the grammar for LaTeX */
 %{
+use Math::ToMath qw(:all);
 #use Data::Dump;
 use feature qw(state say);
 use Printer::Printer;
-my %special_symbols=Printer->get_config('Symbols/Latex.dat');
+my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 
 sub to_symbol{
     my $symbol=shift;

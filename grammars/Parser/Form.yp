@@ -1,9 +1,10 @@
 /* This is the grammar for FORM */
 %{
+use Math::ToMath qw(:all);
 use Data::Dump;
- use feature "state";
- use Printer::Printer;
- my %special_symbols=Printer->get_config('Symbols/Form.dat');
+use feature "state";
+use Printer::Printer;
+my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 %}
 
 %token NUMBER
