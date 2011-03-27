@@ -1,12 +1,12 @@
 package Form_out;
 #define the output in LaTeX format
 
+use Math::ToMath::Operator qw(Operator);
 use 5.10.1;
 use strict;
 use Data::Dump;
-use Operator;
 #----------------------------------------------------------------------------------------------------
-use base 'Printer';
+use parent 'Math::ToMath::Printer';
 
 sub init{
     my $self=shift;

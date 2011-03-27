@@ -4,8 +4,8 @@ package Generic_out;
 use 5.10.1;
 use strict;
 use Data::Dump;
-use Operator;
+use Math::ToMath::Operator qw(Operator);
 #----------------------------------------------------------------------------------------------------
-use base 'Printer';
+use parent 'Math::ToMath::Printer';
 
 1;
