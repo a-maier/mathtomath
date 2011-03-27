@@ -7,10 +7,11 @@ use warnings;
 our $VERSION = '0.01';
 
 use Math::ToMath::Parser qw(Parser);
+use Math::ToMath::Symbols qw(Symbols);
 
 use parent 'Exporter';
 our @EXPORT = qw();
-our @EXPORT_OK = qw(Parser);
+our @EXPORT_OK = qw(Parser Symbols);
 our %EXPORT_TAGS = ( 'all' => \@EXPORT_OK );
 
 1;
