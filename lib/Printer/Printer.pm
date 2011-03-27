@@ -335,19 +335,24 @@ sub get_rules{
 }
 
 #return contents of a configuration file
-sub get_config{
-    my $self=shift;
-    my $file=shift;
-    open(IN,$file) or die "Failed to open $file for reading: $!";
-    my $contents='';
-    while(<IN>){
-	#ignore whitespace and comments
-	s/(\s+|\#.*)//g;
-	$contents.=$_;
+SCOPE: {
+    my %config_cache;
+    sub get_config{
+	my $self=shift;
+	my $file=shift;
+	return @{ $config_cache{$file} } if exists $config_cache{$file};
+	open(my $in, '<', $file) or die "Failed to open $file for reading: $!";
+	my $contents='';
+	while(<$in>){
+	    #ignore whitespace and comments
+	    s/(\s+|\#.*)//g;
+	    $contents.=$_;
+	}
+	close $in;
+	my @tmp=split(/=>|,|;/,$contents);
+	$config_cache{$file} = \@tmp;
+	return  @tmp;
     }
-    close IN;
-    my @tmp=split(/=>|,|;/,$contents);
-    return  @tmp;
 }
 
 #merge information from processing different branches of the tree
