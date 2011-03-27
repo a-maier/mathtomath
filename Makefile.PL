@@ -2,40 +2,58 @@ use 5.010001;
 use ExtUtils::MakeMaker;
 use File::Spec;
 use File::ShareDir::Install;
+use File::Find qw(find);
 
 install_share 'share';
 
 # Find all grammars that we ship so we can generate the
 # parser code using make
-opendir my $dh, 'grammars'
-    or die "Cannot open directory with grammars: $!";
-my @grammars = grep /\.yp$/, readdir($dh);
-closedir $dh;
+my %grammars;
+find({
+    wanted => sub {
+        return if not /\.yp$/;
+        my $infile = $_;
+        my ($vol, $dir, $file) = File::Spec->splitpath($infile);
+        my @dirs = grep $_ ne '', File::Spec->splitdir($dir);
+        shift @dirs;
+        my $basename = $file;
+        $basename =~ s/\.yp$//;
+        my $classname = "Math::ToMath::" . join('::', @dirs, $basename);
+        my $outdir    = File::Spec->catdir(qw(blib lib Math ToMath), @dirs);
+        my $outfile   = File::Spec->catfile($outdir, $basename.".pm");
+        $grammars{$infile} = {
+            outdir    => $outdir,
+            infile    => $infile,
+            outfile   => $outfile,
+            classname => $classname,
+            basename  => $basename,
+        };
+    },
+    no_chdir => 1,
+}, 'grammars');
+#use Data::Dumper;
+#warn Dumper \%grammars;
 
 sub MY::postamble {
     my $self = shift;
     # this will make sure share/ gets installed
     my @sharedircode = File::ShareDir::Install::postamble( $self );
 
-    my $outdir = File::Spec->catdir(qw(blib lib Math ToMath Parser));
     my $make_code = join("\n", @sharedircode, <<"HERE");
 pure_all :: parser
 
 .PHONY: parser
 
 parser: pm_to_blib
-	\$(MKPATH) $outdir
 HERE
-    foreach my $grammar_file (@grammars) {
-        say "Found grammar '$grammar_file'...";
-        my $infile  = File::Spec->catfile(qw(grammars), $grammar_file);
-        my $classname = $grammar_file;
-        $classname =~ s/\.yp$//;
-        my $pmfile = $classname . ".pm";
-        my $outfile = File::Spec->catfile($outdir, $pmfile);
+    foreach my $grammar_spec (values %grammars) {
+        my $infile = $grammar_spec->{infile};
+        say "Found grammar '$infile'...";
+
         my $action = <<ACTION;
-	yapp -o $outfile $infile
-	\$(PERLRUN) -i -pe \"s/package $classname;/package Math::ToMath::Parser::$classname;/\" $outfile
+	\$(MKPATH) $grammar_spec->{outdir}
+	yapp -o $grammar_spec->{outfile} $grammar_spec->{infile}
+	\$(PERLRUN) -i -pe \"s/package\s+$grammar_spec->{basename}\s*;/package $grammar_spec->{classname};/\" $grammar_spec->{outfile}
 ACTION
         $make_code .= $action;
     }
@@ -52,6 +70,7 @@ WriteMakefile(
         'ExtUtils::MakeMaker'     => '0',
         'File::Spec'              => '0',
         'File::ShareDir::Install' => '0',
+        'File::Find'              => '0',
     },
     PREREQ_PM         => {
       'Data::Dump'        => '0',
