@@ -1,4 +1,4 @@
-package Mathematica;
+package Math::ToMath::Printer::Mathematica;
 #define the output in Mathematica format
 
 use 5.10.1;

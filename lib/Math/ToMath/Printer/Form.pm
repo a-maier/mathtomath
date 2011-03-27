@@ -1,4 +1,4 @@
-package Form_out;
+package Math::ToMath::Form;
 #define the output in LaTeX format
 
 use Math::ToMath::Operator qw(Operator);

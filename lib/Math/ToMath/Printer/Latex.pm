@@ -1,4 +1,4 @@
-package Latex_out;
+package Math::ToMath::Printer::Latex;
 #define the output in LaTeX format
 
 use 5.10.1;

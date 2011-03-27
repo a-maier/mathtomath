@@ -1,4 +1,4 @@
-package Generic_out;
+package Math::ToMath::Printer::Generic;
 #define the output in generic format
 
 use 5.10.1;
