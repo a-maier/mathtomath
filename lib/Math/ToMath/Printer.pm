@@ -154,7 +154,7 @@ sub to_string{
 # TODO: or dying on error
 sub symbol_to_string{
     my $self=shift;
-    $_=$_[0];
+    my $_=$_[0];
     $_=$self->replace_local($_);
     #delete illegal tokens
     s/^[[:^alpha:]]+//;
@@ -166,7 +166,7 @@ sub symbol_to_string{
 #format a number as a string
 sub number_to_string{
     my $self=shift;
-    $_=$_[0];
+    my $_=$_[0];
     $_=$self->replace_local($_);
     s/[^\d\.]//g;
     /^(\d+|\d*\.\d+|\d+\.\d*)$/ 
@@ -180,7 +180,7 @@ sub number_to_string{
 #format an internal string as an output string 
 sub string_to_string{
     my $self=shift;
-    $_=$self->replace_local($_[0]);
+    my $_=$self->replace_local($_[0]);
     return ("\"$_\"");
 }
 
