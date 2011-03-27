@@ -2,7 +2,6 @@
 %{
 use Math::ToMath qw(:all);
 #use Data::Dump;
-use Printer::Printer;
 #special symbols
 my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 %}
