@@ -4,13 +4,14 @@ use 5.010001;
 use strict;
 use warnings;
 
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT = qw();
-our @EXPORT_OK = qw( );
-our %EXPORT_TAGS = ( 'all' => \@EXPORT_OK );
-
 our $VERSION = '0.01';
+
+use Math::ToMath::Parser qw(Parser);
+
+use parent 'Exporter';
+our @EXPORT = qw();
+our @EXPORT_OK = qw(Parser);
+our %EXPORT_TAGS = ( 'all' => \@EXPORT_OK );
 
 1;
 __END__
