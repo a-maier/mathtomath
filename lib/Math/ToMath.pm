@@ -8,10 +8,11 @@ our $VERSION = '0.01';
 
 use Math::ToMath::Parser qw(Parser);
 use Math::ToMath::Symbols qw(Symbols);
+use Math::ToMath::Expression qw(Expression);
 
 use parent 'Exporter';
 our @EXPORT = qw();
-our @EXPORT_OK = qw(Parser Symbols);
+our @EXPORT_OK = qw(Parser Symbols Expression);
 our %EXPORT_TAGS = ( 'all' => \@EXPORT_OK );
 
 1;
@@ -39,8 +40,13 @@ None by default.
 
 You can request to have various package name shortcuts exported:
 
-  Symbols => Math::ToMath::Symbols
-  Parser  => Math::ToMath::Parser
+  Symbols    => Math::ToMath::Symbols
+  Parser     => Math::ToMath::Parser
+  Expression => Math::ToMath::Expression
+
+The following export tag will export all exportable shortcuts and functions:
+
+  use Math::ToMath ':all';
 
 =head1 SEE ALSO
 
