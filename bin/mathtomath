@@ -107,7 +107,7 @@ GetOptions( 'informat|if=s' => \$in_format,
 	    'version'=> \$version
     );
 @out_formats = ('Generic') unless @out_formats;
-@out_formats = map ucfirst(lc($_."_out")),
+@out_formats = map ucfirst(lc($_)),
                map {split /,/, $_} @out_formats;
 
 $in_format=ucfirst lc $in_format if $in_format;
@@ -125,7 +125,8 @@ if($help){
 # we decide on our formats at run time,
 # so we require require and don't use use?
 foreach my $out_format (@out_formats){
-    eval(require "Printer/$out_format.pm");
+    $out_format = "Math::ToMath::Printer::$out_format";
+    eval "require $out_format; 1;";
 }
 
 if(!defined $expression){
