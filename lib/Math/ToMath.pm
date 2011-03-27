@@ -37,6 +37,11 @@ Blah blah blah.
 
 None by default.
 
+You can request to have various package name shortcuts exported:
+
+  Symbols => Math::ToMath::Symbols
+  Parser  => Math::ToMath::Parser
+
 =head1 SEE ALSO
 
 ...
