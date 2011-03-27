@@ -91,9 +91,9 @@ sub init{
 	0       => Operator->new(name => '',prec => 0),
 	);
 #special output for certain functions
-# e.g. for Latex we are supposed to put '**log**' => '\log' here
-    %{$self->{symbols}}=reverse $self->get_config("Symbols/$self->{format}.dat");
-    %{$self->{greek_symbols}}=$self->get_config("Symbols/Greek.dat");;
+# e.g. for Latex we are supposed to put '**log**' => '\log' herea
+    %{$self->{symbols}}=reverse $self->get_config(Symbols->get_symbol_file_for_class($self->{format}));
+    %{$self->{greek_symbols}}=$self->get_config(Symbols->get_named_symbol_file("Greek"));
 #special output functions for single objects
     %{$self->{specials}}=();
 }

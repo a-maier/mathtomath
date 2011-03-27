@@ -28,6 +28,7 @@ sub init{
     my $self=shift;
 
     $self->{format}= blessed($self);
+    $self->{format} =~ s/^(?:[^:]+::)+//; # Math::ToMath::Printer::Foo => Foo
     say "Output format: $self->{format}";
 
 #operator properties:
@@ -65,7 +66,7 @@ sub init{
 	);
 #special output for certain functions
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
-    %{$self->{symbols}}=reverse $self->get_config("Symbols/$self->{format}.dat");
+    %{$self->{symbols}}=reverse $self->get_config(Symbols->get_symbol_file_for_class($self->{format}));
 #options
     %{$self->{options}}
 	=$self->get_config("$ENV{HOME}/.mathtomath/$self->{format}/options");
