@@ -106,9 +106,10 @@ GetOptions( 'informat|if=s' => \$in_format,
 	    'help|?'=> \$help,
 	    'version'=> \$version
     );
-@out_formats=('Generic') unless @out_formats;
-@out_formats=(split /,/,join(',',@out_formats));
-@out_formats = map ucfirst(lc($_."_out")), @out_formats;
+@out_formats = ('Generic') unless @out_formats;
+@out_formats = map ucfirst(lc($_."_out")),
+               map {split /,/, $_} @out_formats;
+
 $in_format=ucfirst lc $in_format if $in_format;
 
 if($version){
