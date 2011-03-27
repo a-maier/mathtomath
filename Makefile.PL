@@ -8,6 +8,7 @@ WriteMakefile(
     PREREQ_PM         => {
       'Data::Dump' => '0',
       'Getopt::Long' => '0',
+      'Module::Pluggable' => '0',
     }, # e.g., Module::Name => 1.1
     'EXE_FILES'   => [qw( bin/mathtomath )],
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
