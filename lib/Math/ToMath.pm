@@ -6,13 +6,15 @@ use warnings;
 
 our $VERSION = '0.01';
 
+# Load submodules and import class name shortcuts
 use Math::ToMath::Parser qw(Parser);
 use Math::ToMath::Symbols qw(Symbols);
 use Math::ToMath::Expression qw(Expression);
+use Math::ToMath::Operator qw(Operator);
 
 use parent 'Exporter';
 our @EXPORT = qw();
-our @EXPORT_OK = qw(Parser Symbols Expression);
+our @EXPORT_OK = qw(Parser Symbols Expression Operator);
 our %EXPORT_TAGS = ( 'all' => \@EXPORT_OK );
 
 1;
@@ -43,6 +45,7 @@ You can request to have various package name shortcuts exported:
   Symbols    => Math::ToMath::Symbols
   Parser     => Math::ToMath::Parser
   Expression => Math::ToMath::Expression
+  Operator   => Math::ToMath::Operator
 
 The following export tag will export all exportable shortcuts and functions:
 
