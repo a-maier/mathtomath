@@ -3,11 +3,17 @@ package Math::ToMath::Printer;
 #all output classes inherit from this one
 use 5.10.1;
 use strict;
+
+use constant Printer => __PACKAGE__;
+
+use parent 'Exporter';
+our @EXPORT_OK = qw(Printer);
+our %EXPORT_TAGS = ('all' => \@EXPORT_OK);
+
 use Data::Dump;
 use Math::ToMath qw(:all);
 use Scalar::Util qw(blessed);
 #----------------------------------------------------------------------------------------------------
-
 
 sub new{
     my $class=shift;
