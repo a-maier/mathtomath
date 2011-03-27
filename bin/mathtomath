@@ -28,11 +28,11 @@ use strict;
 use Math::ToMath qw(:all);
 use Data::Dump;
 use Getopt::Long;
+use Pod::Usage;
 
 my $version;
 
 my $help;
-my $help_text='TODO';
 my $tree;
 
 my $verbose;
@@ -103,24 +103,24 @@ GetOptions( 'informat|if=s' => \$in_format,
 	    'expression|e=s' => \$expression,
 	    'strict!' => \$strict,
 	    'verbose!'=> \$verbose,
-	    'help|?'=> \$help,
+	    'h|help|?'=> \$help,
 	    'version'=> \$version
     );
-@out_formats = ('Generic') unless @out_formats;
-@out_formats = map ucfirst(lc($_)),
-               map {split /,/, $_} @out_formats;
-
-$in_format=ucfirst lc $in_format if $in_format;
 
 if($version){
     say 'mathtomath version ' . Math::ToMath->VERSION;
     exit;
 }
 
-if($help){
-    say $help_text;
-    exit;
+if ($help) {
+    pod2usage(-verbose => 1);
 }
+
+@out_formats = ('Generic') unless @out_formats;
+@out_formats = map ucfirst(lc($_)),
+               map {split /,/, $_} @out_formats;
+
+$in_format=ucfirst lc $in_format if $in_format;
 
 # we decide on our formats at run time,
 # so we require require and don't use use?
@@ -139,7 +139,7 @@ if($in_format){
     my $parser_class = Parser->get_parser($in_format);
     my $parser=$parser_class->new;
     say "Parsing $in_format expression" if $verbose;
-    $tree=$parser->parse($expression) or exit(1);
+    $tree=$parser->parse($expression) or die "Failed to parse expression!";
 }
 else{
     #no input format is given, try all possibilities
