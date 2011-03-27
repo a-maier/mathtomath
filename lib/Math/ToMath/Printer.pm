@@ -1,10 +1,10 @@
-package Printer;
+package Math::ToMath::Printer;
 #define the output in generic format
 #all output classes inherit from this one
 use 5.10.1;
 use strict;
 use Data::Dump;
-use Operator;
+use Math::ToMath qw(:all);
 #----------------------------------------------------------------------------------------------------
 
 
