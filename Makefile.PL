@@ -79,6 +79,8 @@ WriteMakefile(
       'Parse::Yapp'       => '0',
       'File::Spec'        => '0',
       'File::ShareDir'    => '0',
+      'Pod::Usage'        => '0',
+      'parent'            => '0',
     }, # e.g., Module::Name => 1.1
     'EXE_FILES'   => [qw( bin/mathtomath )],
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
