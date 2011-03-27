@@ -45,8 +45,6 @@ my $in_format;
 my @out_formats;
 my $expression;
 
-sub get_input_formats;
-
 =head1 OPTIONS
 
 =over 2
@@ -147,7 +145,7 @@ if($in_format){
 else{
     #no input format is given, try all possibilities
     say "Trying to guess input format" if $verbose;
-    my @formats=get_input_formats;
+    my @formats=get_input_formats();
     foreach my $in_format (@formats){
 	eval(require "Parser/$in_format.pm" );
 	my $parser=$in_format->new;
