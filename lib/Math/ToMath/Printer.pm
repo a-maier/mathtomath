@@ -322,6 +322,7 @@ sub replace_local{
     my $self=shift;
     my $_=shift;
     return $self->{rules}->{local_simple}->{$_} if defined $self->{rules}->{local_simple}->{$_};
+    # FIXME: This will discard fatal errors, not good. See "perlop" and look for the qr// operator
     eval(join(';',@{$self->{rules}->{local_regex}})) if defined $self->{rules}->{local_regex};
     return $_
 }
@@ -371,6 +372,7 @@ sub merge_info{
 sub format{
     my $self=shift;
     my $_=shift;
+    # FIXME: This will discard fatal errors, not good. See "perlop" and look for the qr// operator
     eval(join(';',@{$self->{rules}->{global}})) if defined $self->{rules}->{global};
     $_=$self->insert_line_breaks($_) if ($self->{options}->{line_length});
     return $_;
@@ -380,6 +382,7 @@ sub format{
 sub insert_line_breaks{
     my $self=shift;
     my $_=shift;
+    # FIXME: See Text::Wrap! It's part of core perl.
     s/(.{$self->{options}->{line_length}})/$1\n/g;
     return $_;
 }
