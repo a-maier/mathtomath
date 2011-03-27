@@ -9,7 +9,7 @@ use parent 'Exporter';
 our @EXPORT_OK = qw(Parser);
 
 # automatically load all contained parsers
-# and return a list of them using the "" class method
+# and return a list of them using the "get_parsers" class method
 use Module::Pluggable (
     search_path => 'Math::ToMath::Parser',
     sub_name    => '_get_parsers',
