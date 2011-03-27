@@ -28,8 +28,6 @@ use strict;
 use Math::ToMath qw(:all);
 use Data::Dump;
 use Getopt::Long;
-#change this
-use Printer::Printer;
 
 my $version;
 
