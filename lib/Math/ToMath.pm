@@ -17,7 +17,7 @@ __END__
 
 =head1 NAME
 
-Math::ToMath - bla bla bla
+Math::ToMath - Convert mathematical expressions between different formats
 
 =head1 SYNOPSIS
 
