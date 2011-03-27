@@ -24,9 +24,9 @@ use Expression;
 use Getopt::Long;
 #change this
 use Printer::Printer;
+use Math::ToMath;
 
 my $version;
-my $version_number=0.0;
 
 my $help;
 my $help_text='TODO';
@@ -90,7 +90,7 @@ GetOptions( 'informat|if=s' => \$in_format,
 $in_format=ucfirst lc $in_format if $in_format;
 
 if($version){
-    say 'mathtomath version $version_number';
+    say 'mathtomath version ' . Math::ToMath->VERSION;
     exit;
 }
 
