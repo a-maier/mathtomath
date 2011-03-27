@@ -10,7 +10,7 @@ use parent 'Math::ToMath::Printer';
 
 sub init{
     my $self=shift;
-    $self->SUPER::init;
+    $self->SUPER::init(@_);
     #these operators do not exist
     map {delete $self->{operators}->{$_}} qw(> < == != >= <= ???);
     # '=' is not associative
@@ -22,7 +22,7 @@ sub init{
 #format a symbol as a string
 sub symbol_to_string{
     my $self=shift;
-    $_=$_[0];
+    my $_=$_[0];
     #if it contains illegal tokens, we use special form syntax [...]
     return $_ if /^(\$?[[:alpha:]][[:alnum:]]*_?|\.{3}|\[.*\])$/;
     return "[$_]";

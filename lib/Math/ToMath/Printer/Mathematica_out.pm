@@ -1,4 +1,4 @@
-package Mathematica_out;
+package Mathematica;
 #define the output in Mathematica format
 
 use 5.10.1;
@@ -10,11 +10,8 @@ use parent 'Math::ToMath::Printer';
 
 sub init{
     my $self=shift;
+    $self->SUPER::init(@_);
 
-    #this is very questionable
-    $self->{format}="$self";
-    $self->{format} =~ s/(_out)?=.*//;
-    say "Output format: $self->{format}";
 #operator properties:
 # which operators exist, which token(s) are to be used for output, precedence, pre/in/postfix...
 # brackets should also be included here to indicate that they are legal
@@ -129,7 +126,7 @@ sub bracket_to_string{
 # TODO: or dying on error
 sub symbol_to_string{
     my $self=shift;
-    $_=$_[0];
+    my $_=$_[0];
     #greek letters
     if(/^\*\*(.*)\*\*$/ and $self->{greek_symbols}->{$1}){
 	s/^\*\*|\*\*$//g;

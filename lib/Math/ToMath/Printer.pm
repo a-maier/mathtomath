@@ -5,6 +5,7 @@ use 5.10.1;
 use strict;
 use Data::Dump;
 use Math::ToMath qw(:all);
+use Scalar::Util qw(blessed);
 #----------------------------------------------------------------------------------------------------
 
 
@@ -19,10 +20,10 @@ sub new{
 
 sub init{
     my $self=shift;
-    #this is very questionable
-    $self->{format}="$self";
-    $self->{format} =~ s/(_out)?=.*//;
+
+    $self->{format}= blessed($self);
     say "Output format: $self->{format}";
+
 #operator properties:
 # which operators exist, which token(s) are to be used for output, precedence, pre/in/postfix...
 # brackets should also be included here to indicate that they are legal

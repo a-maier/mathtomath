@@ -14,7 +14,7 @@ my @bracket_size_modifier=('','\big','\Big','\bigg','\Bigg');
 
 sub init{
     my $self=shift;
-    $self->SUPER::init;
+    $self->SUPER::init(@_);
     %{$self->{specials}}=(
 	'/' => \&ratio_as_frac,
 	'*' => \&product,
