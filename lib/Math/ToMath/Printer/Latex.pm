@@ -342,7 +342,7 @@ sub insert_line_breaks{
     my $_=shift;
     #$_ or return $_;
     use Math::ToMath::Printer::LatexSlicer;
-    my $parser= Math::ToMath::PrinterLatexSlicer->new;
+    my $parser= Math::ToMath::Printer::LatexSlicer->new;
     $parser->init($self->{options});
     $_=$parser->parse($_) or die "Internal error: failed to parse output string"; 
     return $_;
