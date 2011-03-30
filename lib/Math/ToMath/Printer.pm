@@ -12,6 +12,8 @@ our %EXPORT_TAGS = ('all' => \@EXPORT_OK);
 
 use Data::Dump;
 use Math::ToMath qw(:all);
+use Math::ToMath::Operator qw(Operator);
+use Math::ToMath::Symbols qw(Symbols);
 use Scalar::Util qw(blessed);
 #----------------------------------------------------------------------------------------------------
 
@@ -28,6 +30,7 @@ sub init{
     my $self=shift;
 
     $self->{format}= blessed($self);
+    #why not just s/^.*::// ?
     $self->{format} =~ s/^(?:[^:]+::)+//; # Math::ToMath::Printer::Foo => Foo
     say "Output format: $self->{format}";
 

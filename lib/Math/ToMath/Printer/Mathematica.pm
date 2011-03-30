@@ -5,6 +5,7 @@ use 5.10.1;
 use strict;
 use Data::Dump;
 use Math::ToMath::Operator qw(Operator);
+use Math::ToMath::Symbols qw(Symbols);
 #----------------------------------------------------------------------------------------------------
 use parent 'Math::ToMath::Printer';
 
