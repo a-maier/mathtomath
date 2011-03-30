@@ -168,14 +168,6 @@ foreach my $out_format (@out_formats){
     say $out_str;
 }
 
-sub get_input_formats{
-    opendir(my $handle,'Parser') or die "Failed to access directory 'Parser': $!";
-    my @format_files = grep {s/\.pm$//} (grep {!/^Generic\.pm$/} readdir($handle));
-    #make sure Generic format is tried first
-    unshift(@format_files,'Generic');
-    closedir $handle;
-    return @format_files;
-}
 
 =head1 EXAMPLES
 
@@ -185,14 +177,14 @@ to B<LaTeX>:
   mathtomath -if Mathematica -of LaTeX -e 'Pi*r^2'
 
 Not specifying an input format can lead to undefined results.
-This may in principle result to (C<v.v)^2>, but also to C<v.(v^2)>:
+This may in principle result to C<(v.v)^2>, but also to C<v.(v^2)>:
 
   mathtomath -e 'v.v^2'
 
 This reads expressions from a file and adds line breaks after
 approximately 40 characters to the B<LaTeX> output:
 
-  mathtomath -if Mathematica -of Latex -o 'line_length=40' F<file_with_long_expressions>
+  mathtomath -if Mathematica -of Latex -o 'line_length=40' file_with_long_expressions
 
 =head1 FILES
 
