@@ -118,7 +118,7 @@ sub ratio_as_frac{
     $num=$self->fall_through_bracket($$args[0]);
     #-x/y should be formatted as -\frac{x}{y}, not \frac{-x}{y}
     my $uminus=0;
-    if($num->name eq '-' and @{$num->args}==1){
+    if($num->name eq 'u-'){
 	$num=$num->args->[0];
 	$uminus=1;
     }
