@@ -32,7 +32,6 @@ sub init{
     $self->{format}= blessed($self);
     #why not just s/^.*::// ?
     $self->{format} =~ s/^(?:[^:]+::)+//; # Math::ToMath::Printer::Foo => Foo
-    say "Output format: $self->{format}";
 
 #operator properties:
 # which operators exist, which token(s) are to be used for output, precedence, pre/in/postfix...
@@ -371,10 +370,17 @@ SCOPE: {
 sub merge_info{
 }
 
-#final formatting for output string
 sub format{
     my $self=shift;
-    my $_=shift;
+    return $self->{format};
+}
+
+#convert expression to current format
+sub convert{
+    my $self=shift;
+    my $expression=shift;
+    my $_=$self->to_string($expression);
+    #final formatting for output string
     # FIXME: This will discard fatal errors, not good. See "perlop" and look for the qr// operator
     eval(join(';',@{$self->{rules}->{global}})) if defined $self->{rules}->{global};
     $_=$self->insert_line_breaks($_) if ($self->{options}->{line_length});

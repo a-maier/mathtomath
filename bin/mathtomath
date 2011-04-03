@@ -163,9 +163,8 @@ else{
 foreach my $out_format (@out_formats){
     #dd $tree;
     my $printer=$out_format->new;
-    my $out_str=$printer->to_string($tree);
-    $out_str=$printer->format($out_str);
-    say $out_str;
+    say "Output format: ",$printer->format unless $quiet;
+    say $printer->convert($tree);
 }
 
 
