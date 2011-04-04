@@ -1,4 +1,11 @@
 package Math::ToMath::Operator;
+
+=head1 NAME
+
+Math::ToMath::Operator - Class for mathematical operators used by Math::ToMath::Printer
+
+=cut
+
 use strict;
 use warnings;
 use Data::Dump;
@@ -9,12 +16,61 @@ our @EXPORT_OK = qw(Operator);
 our @EXPORT = qw();
 our %EXPORT_TAGS = ('all' => \@EXPORT_OK);
 
+=head1 SYNOPSIS
+
+ use Math::ToMath::Operator;
+
+ my $op=Operator->new(name => ';',prec => 0,assoc =>'right',pos => 'postfix')
+
+ $op->name;
+ $op->prec;
+ $op->assoc;
+ $op->pos;
+
+=head1 DESCRIPTION
+
+
+=over 2
+
+=item B<new>
+
+
+The constructor. All arguments are optional.
+
+
+=item B<name>
+
+
+Returns the operator's name, e.g. "+", "==".
+
+
+=item B<prec>
+
+
+Returns the operator's precedence (a number). 
+
+
+=item B<assoc>
+
+Returns the operator's associativity, i.e. one of "left", "right" or "nonassoc"
+
+=item B<pos>
+
+Returns the position of the operator relative to its argument. This is either 
+"prefix" or "postfix". Operators with more than one argument are automatically
+considered to be infix operators.
+
+
+=back
+
+=cut
+
 sub new{
     my $class=shift;
     my $self={
 	prec => 0,
 	assoc => '',
-	'pos' => ''
+	pos => ''
     };
     %$self=@_;
     bless($self,$class);
@@ -43,3 +99,13 @@ sub pos{
 }
 
 1;
+
+=head1 SEE ALSO
+
+B<TODO> 
+
+=head1 AUTHOR
+
+B<TODO> we
+
+=cut

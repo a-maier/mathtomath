@@ -1,5 +1,11 @@
 package Math::ToMath::Expression;
-#define the structure of one node in our syntax tree
+
+=head1 NAME
+
+Math::ToMath::Expression - Class for B<mathtomath> expressions
+
+=cut
+
 use strict;
 use warnings;
 use Data::Dump;
@@ -9,6 +15,54 @@ use parent 'Exporter';
 our @EXPORT_OK = qw(Expression);
 our @EXPORT = qw();
 our %EXPORT_TAGS = ('all' => \@EXPORT_OK);
+
+=head1 SYNOPSIS
+
+ use Math::ToMath::Expression;
+
+ my $x=Expression->new(name =>'x',is => 'symbol');
+
+ $x->is;
+ $x->name;
+ $x->args;
+
+
+=head1 DESCRIPTION
+
+Like almost all computer algebra systems, B<mathtomath> internally 
+stores expressions as trees, which are implemented in the 
+Math::ToMath::Expression class. It offers the following methods:
+
+=over 2
+
+=item B<new>
+
+
+The constructor with the expression's name and type (C<is>) as mandatory arguments.
+
+
+=item B<is>
+
+
+Returns the type of the expression, which is one of "number", "symbol", "operator"
+or "bracket".
+
+
+=item B<name>
+
+
+Returns the name of the expression, e.g. "x", "3.1415" or "+".
+
+
+=item B<args>
+
+
+For operators and brackets, this returns an array reference to the argument(s).
+
+
+=back
+
+=cut
 
 sub new{
     my $class=shift;
@@ -38,3 +92,14 @@ sub args{
 }
 
 1;
+
+=head1 SEE ALSO
+
+B<TODO> 
+
+=head1 AUTHOR
+
+B<TODO> we
+
+=cut
+
