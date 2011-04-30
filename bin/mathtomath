@@ -35,6 +35,7 @@ my $version;
 my $help;
 my $tree;
 
+my $quiet;
 my $verbose;
 my $strict;
 
@@ -102,6 +103,7 @@ GetOptions( 'informat|if=s' => \$in_format,
 	    'outformats|of=s' => \@out_formats,
 	    'expression|e=s' => \$expression,
 	    'strict!' => \$strict,
+	    'quiet!' => \$quiet,
 	    'verbose!'=> \$verbose,
 	    'h|help|?'=> \$help,
 	    'version'=> \$version
