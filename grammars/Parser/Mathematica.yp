@@ -5,6 +5,7 @@ TODO:
 */
 %{
 use Math::ToMath qw(:all);
+use Math::BigFloat;
 #use Data::Dump;
 my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 %}
@@ -94,7 +95,8 @@ my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PAC
 %left MESSAGENAME # ::
 # %nonassoc PIECEWISE
 #this is not mathematica default, but I guess we need it
-%nonassoc '´'  
+%nonassoc PRECISION # ´
+%nonassoc ACCURACY # ´´
 %nonassoc PATTERN # _ __ ___ 
 
 
@@ -134,7 +136,14 @@ symbol:	SYMBOL	{
 ;
 
 number: NUMBER 	{Expression->new(name =>$_[1],is => 'number')}
-	| number '´' number {Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
+	| number PRECISION number {
+	  	 	   my $number=Math::BigFloat->new($_[1]->name);
+	  	 	   Expression->new(name =>$number->bround($_[3]->name),is => 'number');
+			   }
+	| number ACCURACY number {
+	  	 	   my $number=Math::BigFloat->new($_[1]->name);
+	  	 	   Expression->new(name =>$number->bfround(-$_[3]->name),is => 'number');
+			   }
 ;
 string: STRING {Expression->new(name =>$_[1],is => 'string')}
 ;
@@ -306,6 +315,8 @@ sub _lexer {
 	return('MESSAGENAME',$1) if s/^(::)//;
 	return('PATTERN',$1) if s/^(_{1,3})//;
 	return('EXP',$1) if s/^(\*\^)//;
+	return('ACCURACY',$1) if s/^(´´)//;
+	return('PRECISION',$1) if s/^(´)//;
         return($1,$1) if s/^(.)//s;
     }
 }
