@@ -15,6 +15,8 @@ use Math::ToMath qw(:all);
 use Math::ToMath::Operator qw(Operator);
 use Math::ToMath::Symbols qw(Symbols);
 use Scalar::Util qw(blessed);
+use Text::Wrap;
+
 #----------------------------------------------------------------------------------------------------
 
 sub new{
@@ -391,9 +393,12 @@ sub convert{
 sub insert_line_breaks{
     my $self=shift;
     my $_=shift;
-    # FIXME: See Text::Wrap! It's part of core perl.
-    s/(.{$self->{options}->{line_length}})/$1\n/g;
-    return $_;
+    local $Text::Wrap::columns = $self->{options}->{line_length};
+    local $Text::Wrap::break = $self->{options}->{line_break_at};
+    # FIXME: uncomment once options are working properly
+    #local $Text::Wrap::separator2 = $self->{options}->{line_break};
+    local $Text::Wrap::separator2 ="\n";
+    return wrap('','',$_);
 }
 
 1;
