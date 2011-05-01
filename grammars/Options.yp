@@ -1,0 +1,65 @@
+/* Grammar for options and rules */
+%{
+# use Data::Dump;
+# use feature qw(say);
+
+%}
+
+%token ASSIGN # assignment operator
+%token SEP    # separator
+
+%%
+
+input: /* empty */
+       | optionlist
+;
+
+optionlist: option
+	 | optionlist SEP option {
+	 #%{$_[1]}{keys %{$_[3]}}=values %{$_[3]}
+	 }
+;
+
+option: name ASSIGN value {($_[1] => $_[3])}
+;
+
+name: ANY
+      | name ANY {$_[1].$_[2]}
+;
+
+value: ANY
+      | value ANY {$_[1].$_[2]}
+;
+
+%%
+
+sub _error {
+    if(exists $_[0]->YYData->{ERRMSG}) {
+	print $_[0]->YYData->{ERRMSG};
+        delete $_[0]->YYData->{ERRMSG};
+        return;
+    };
+}
+
+sub _lexer {
+    my $parser =shift;
+    
+    return('',undef) unless $parser->YYData->{INPUT};
+    for ($parser->YYData->{INPUT}) {
+    	s/\s+//;
+    	return('ASSIGN',$1) if s/^(=>?)//;
+	return('SEP',$1) if s/^(;|,)//;
+    	return('ANY',$1) if s/^\\("|')//;
+    	return('ANY',$2) if s/^("|')(.*?[^\\])\1//;#
+    }
+}
+
+sub parse {
+    my $self=shift;
+    my $data=shift;
+    for ($data){
+	$self->YYData->{INPUT} = $_
+    }
+    $self->YYParse( yylex => \&_lexer, yyerror => \&_error );
+}
+
