@@ -114,7 +114,7 @@ sub _lexer {
     # a symbol or an index 
     state $symbol_mode=1;
 
-    return('',undef) unless $parser->YYData->{INPUT};
+    return('',undef) if $parser->YYData->{INPUT} eq '';
 
     for ($parser->YYData->{INPUT}) {
     	s/^\s+//;

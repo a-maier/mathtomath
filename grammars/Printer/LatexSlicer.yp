@@ -143,7 +143,7 @@ sub _error {
 sub _lexer {
     my $parser =shift;
     
-    return('',undef) unless $parser->YYData->{INPUT};
+    return('',undef) if $parser->YYData->{INPUT} eq '';
     for ($parser->YYData->{INPUT}) {
     	return('FRAC',$1) if s/^(\\frac)//;
 	return('SEPARATOR',$1) if s/^($parser->{line_break_at})//;

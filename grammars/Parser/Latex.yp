@@ -165,7 +165,7 @@ sub _lexer {
     state $in_matrix_env=0;
     my $parser =shift;
     
-    return('',undef) unless $parser->YYData->{INPUT};
+    return('',undef) if $parser->YYData->{INPUT} eq '';
     for ($parser->YYData->{INPUT}) {
     	#dirty hack here: the parser must never return '&' or '\\'
     	# unless we are in a matrix environment

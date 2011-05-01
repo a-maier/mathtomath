@@ -275,7 +275,7 @@ sub _error {
 sub _lexer {
     my $parser =shift;
     
-    return('',undef) unless $parser->YYData->{INPUT};
+    return('',undef) if $parser->YYData->{INPUT} eq '';
 
     for ($parser->YYData->{INPUT}) {
         s/^\s+//;
