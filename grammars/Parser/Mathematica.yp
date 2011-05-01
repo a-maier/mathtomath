@@ -278,6 +278,7 @@ sub _lexer {
     return('',undef) unless $parser->YYData->{INPUT};
 
     for ($parser->YYData->{INPUT}) {
+        s/^\s+//;
     	# first check for reals, then for integers
 	return('NUMBER',$1) if s/^(\d*\.\d+|\d+\.\d*)//; 
 	return('NUMBER',$1) if s/^(\d+)//; 
@@ -325,7 +326,6 @@ sub parse {
     my $self=shift;
     my $data=shift;
     for ($data){
-	s/\s+//g;
 	$self->YYData->{INPUT} = $_
     }
     $self->YYParse( yylex => \&_lexer, yyerror => \&_error );

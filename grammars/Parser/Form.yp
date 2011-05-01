@@ -117,6 +117,7 @@ sub _lexer {
     return('',undef) unless $parser->YYData->{INPUT};
 
     for ($parser->YYData->{INPUT}) {
+    	s/^\s+//;
 	#special symbols of the type [...]
     	if($symbol_mode and s/^\[//){
 	    my $sym='[';
@@ -159,7 +160,6 @@ sub parse {
     my $self=shift;
     my $data=shift;
     for ($data){
-	s/\s+//g;
 	$self->YYData->{INPUT} = $_
     }
     $self->YYParse( yylex => \&_lexer, yyerror => \&_error );
