@@ -16,11 +16,14 @@ input: /* empty */
 
 optionlist: option
 	 | optionlist SEP option {
-	 #%{$_[1]}{keys %{$_[3]}}=values %{$_[3]}
+	 my %left=%{$_[1]};
+	 my %right=%{$_[3]};
+	 @left{keys %right}=values %right;
+	 \%left;
 	 }
 ;
 
-option: name ASSIGN value {($_[1] => $_[3])}
+option: name ASSIGN value {return {$_[1] => $_[3]}}
 ;
 
 name: ANY
@@ -44,13 +47,14 @@ sub _error {
 sub _lexer {
     my $parser =shift;
     
-    return('',undef) unless $parser->YYData->{INPUT};
+    return('',undef) if $parser->YYData->{INPUT} eq '';
     for ($parser->YYData->{INPUT}) {
-    	s/\s+//;
+    	s/^\s+//;
     	return('ASSIGN',$1) if s/^(=>?)//;
 	return('SEP',$1) if s/^(;|,)//;
     	return('ANY',$1) if s/^\\("|')//;
-    	return('ANY',$2) if s/^("|')(.*?[^\\])\1//;#
+    	return('ANY',$2) if s/^("|')(.*?[^\\])\1//;
+    	return('ANY',$1) if s/^(.)//;
     }
 }
 
