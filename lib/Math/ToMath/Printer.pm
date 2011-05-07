@@ -247,7 +247,7 @@ sub operator_to_string{
     
     if ($last_prec > $operator->prec) {$string='('.$string.')'}
     #check associativiy - only important if the previous operator equals the current one
-    elsif($operator->name eq $last_op){
+    elsif($op_name eq $last_op){
 	if(! defined $operator->assoc){
 	    die "Subsequent occurence of non-associative operator ".$operator->name;
 	}
