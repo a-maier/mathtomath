@@ -29,6 +29,7 @@ use Math::ToMath qw(:all);
 use Data::Dump;
 use Getopt::Long;
 use Pod::Usage;
+use Math::ToMath::Options;
 
 my $version;
 
@@ -42,6 +43,8 @@ my $strict;
 my $in_format;
 my @out_formats;
 my $expression;
+my $raw_cl_options;
+my %cl_options;
 
 =head1 OPTIONS
 
@@ -102,6 +105,7 @@ Display version number and exits
 GetOptions( 'informat|if=s' => \$in_format,
 	    'outformats|of=s' => \@out_formats,
 	    'expression|e=s' => \$expression,
+	    'options|o=s' => \$raw_cl_options,
 	    'strict!' => \$strict,
 	    'quiet!' => \$quiet,
 	    'verbose!'=> \$verbose,
@@ -116,6 +120,11 @@ if($version){
 
 if ($help) {
     pod2usage(-verbose => 1);
+}
+
+if($raw_cl_options){
+    my $parser=Math::ToMath::Options->new();
+    %cl_options = %{$parser->parse($raw_cl_options)};
 }
 
 @out_formats = ('Generic') unless @out_formats;
@@ -164,11 +173,42 @@ else{
 #create output in the desired format
 foreach my $out_format (@out_formats){
     #dd $tree;
-    my $printer=$out_format->new;
+    my $printer=gen_printer($out_format,options => \%cl_options);
     say "Output format: ",$printer->format unless $quiet;
     say $printer->convert($tree);
 }
 
+
+#get options or rules for the given format from the corresponding configuration file
+sub get_format_config{
+    my $format=shift;
+    my $file=shift;
+    my $parser=Math::ToMath::Options->new();
+    #TODO: -autocreate file, giving a message (unless $quiet)
+    #      -create directory during installation?
+    open(my $in,"$ENV{HOME}/.mathtomath/$format/$file") or die "Failed to open $ENV{HOME}/.mathtomath/$format/$file: $!";
+    local $/;
+    my %options = %{$parser->parse(<$in>)} or die "Failed to parse $file for format $format";
+    close $in;
+    return %options;
+}
+
+#generate a printer of the given class and set options and rules according to
+# configuration files and command line options
+sub gen_printer{
+    my $parser_class = shift;
+    my $parser=$parser_class->new;
+    my %override=@_;#
+    my $format=$parser_class;
+    $format =~ s/^Math::ToMath::Printer:://;
+    #default options from configuration file
+    my %options=get_format_config($format,"options");
+    #additional options (e.g. from command line)
+    @options{keys %{$override{options}}}=values %{$override{options}};
+    $parser->options(%options);
+
+    return $parser;
+}
 
 =head1 EXAMPLES
 

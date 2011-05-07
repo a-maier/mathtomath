@@ -66,12 +66,10 @@ sub init{
 	# when there is no such operator, we use 0
 	0       => Operator->new(name => '',prec => 0),
 	);
+    #TODO: set default options
 #special output for certain functions
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
     %{$self->{symbols}}=reverse $self->get_config(Symbols->get_symbol_file_for_class($self->{format}));
-#options
-    %{$self->{options}}
-	=$self->get_config("$ENV{HOME}/.mathtomath/$self->{format}/options");
 #special output functions for single objects
     %{$self->{specials}}=();
     ($self->{rules}->{local_simple},$self->{rules}->{local_regex})=
@@ -81,6 +79,13 @@ sub init{
     # print 'local simple rules:'; dd $self->{rules}->{local_simple};
     # print 'local regex rules:'; dd $self->{rules}->{local_regex};
 
+}
+
+#set or read options
+sub options{
+    my $self=shift;
+    %{$self->{options}}=@_ if @_;
+    return %{$self->{options}};
 }
 
 sub operator_by_name{
