@@ -205,18 +205,26 @@ sub get_format_config{
 #generate a printer of the given class and set options and rules according to
 # configuration files and command line options
 sub gen_printer{
-    my $parser_class = shift;
-    my $parser=$parser_class->new;
+    my $printer_class = shift;
+    my $printer=$printer_class->new;
     my %override=@_;#
-    my $format=$parser_class;
+    my $format=$printer_class;
     $format =~ s/^Math::ToMath::Printer:://;
     #default options/rules from configuration files
     my %options=get_format_config($format,"options");
-    #additional options (e.g. from command line)
+    my %local_rules=get_format_config($format,"local_rules");
+    my %global_rules=get_format_config($format,"global_rules");
+    
+    #additional options/rules (e.g. from command line)
     @options{keys %{$override{options}}}=values %{$override{options}};
-    $parser->options(%options);
+    @local_rules{keys %{$override{local_rules}}}=values %{$override{local_rules}};
+    @global_rules{keys %{$override{global_rules}}}=values %{$override{global_rules}};
 
-    return $parser;
+    $printer->options(%options);
+    $printer->local_rules(%local_rules);
+    $printer->global_rules(%global_rules);
+
+    return $printer;
 }
 
 =head1 EXAMPLES

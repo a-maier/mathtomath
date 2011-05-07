@@ -66,19 +66,18 @@ sub init{
 	# when there is no such operator, we use 0
 	0       => Operator->new(name => '',prec => 0),
 	);
-    #TODO: set default options
-    %{$self->{options}}=();
+
 #special output for certain functions
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
     %{$self->{symbols}}=reverse $self->get_config(Symbols->get_symbol_file_for_class($self->{format}));
+
+    #TODO: set default options
+    %{$self->{options}}=();
+    for my $scope ("local","global"){
+	%{$self->{rules}->{$scope}}=();
+    }
 #special output functions for single objects
     %{$self->{specials}}=();
-    ($self->{rules}->{local_simple},$self->{rules}->{local_regex})=
-	$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/local_rules");
-    $self->{rules}->{global}=
-	$self->get_rules("$ENV{HOME}/.mathtomath/$self->{format}/global_rules");
-    # print 'local simple rules:'; dd $self->{rules}->{local_simple};
-    # print 'local regex rules:'; dd $self->{rules}->{local_regex};
 
 }
 
@@ -87,6 +86,22 @@ sub options{
     my $self=shift;
     %{$self->{options}}=@_ if @_;
     return %{$self->{options}};
+}
+
+#set or read local rules
+sub local_rules{
+    my $self=shift;
+    %{$self->{rules}->{local}}=@_ if @_;
+    map {$_=qr/$_/} keys %{$self->{rules}->{local}};
+    return %{$self->{rules}->{local}};
+}
+
+#set or read global rules
+sub global_rules{
+    my $self=shift;
+    %{$self->{rules}->{global}}=@_ if @_;
+    map {$_=qr/$_/} keys %{$self->{rules}->{global}};
+    return %{$self->{rules}->{global}};
 }
 
 sub operator_by_name{
@@ -325,30 +340,14 @@ sub bracket_to_string{
     return ($string,%tree_info)
 }
 
-#use local replacement rules on $_[0] 
+#use local replacement rules on argument 
 sub replace_local{
     my $self=shift;
     my $_=shift;
-    return $self->{rules}->{local_simple}->{$_} if defined $self->{rules}->{local_simple}->{$_};
-    # FIXME: This will discard fatal errors, not good. See "perlop" and look for the qr// operator
-    eval(join(';',@{$self->{rules}->{local_regex}})) if defined $self->{rules}->{local_regex};
+    for my $pattern (keys %{$self->{rules}->{local}}){
+	s/$pattern/$self->{rules}->{local}->{$pattern}/ee;
+    }
     return $_
-}
-
-#read substitution rules from file $_[0]
-# returns ($simple_rules,$regex_rules)
-#$simple_rules is a hash reference with rules of the form a => b
-#$regex_rules is an array reference with rules of the form s/a/b/
-sub get_rules{
-    my $self=shift;
-    my $file=shift;
-    my $simple_rules={};
-    my $regex_rules=[];
-    -r -f $file or return ($simple_rules,$regex_rules);
-    my @tmp=$self->get_config($file);
-    @$regex_rules=grep(m#s/.*/.*/.*#,@tmp);
-    %$simple_rules=grep(!m#s/.*/.*/.*#,@tmp);
-    return ($simple_rules,$regex_rules)
 }
 
 #return contents of a configuration file
@@ -387,8 +386,9 @@ sub convert{
     my $expression=shift;
     my $_=$self->to_string($expression);
     #final formatting for output string
-    # FIXME: This will discard fatal errors, not good. See "perlop" and look for the qr// operator
-    eval(join(';',@{$self->{rules}->{global}})) if defined $self->{rules}->{global};
+    for my $pattern (keys %{$self->{rules}->{global}}){
+	s/$pattern/$self->{rules}->{global}->{$pattern}/ee;
+    }
     $_=$self->insert_line_breaks($_) if ($self->{options}->{line_length});
     return $_;
 }
