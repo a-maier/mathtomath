@@ -30,6 +30,7 @@ use Data::Dump;
 use Getopt::Long;
 use Pod::Usage;
 use Math::ToMath::Options;
+use File::Path qw(make_path);
 
 my $version;
 
@@ -182,15 +183,23 @@ foreach my $out_format (@out_formats){
 #get options or rules for the given format from the corresponding configuration file
 sub get_format_config{
     my $format=shift;
-    my $file=shift;
+    my $type=shift;
     my $parser=Math::ToMath::Options->new();
-    #TODO: -autocreate file, giving a message (unless $quiet)
-    #      -create directory during installation?
-    open(my $in,"$ENV{HOME}/.mathtomath/$format/$file") or die "Failed to open $ENV{HOME}/.mathtomath/$format/$file: $!";
-    local $/;
-    my %options = %{$parser->parse(<$in>)} or die "Failed to parse $file for format $format";
-    close $in;
-    return %options;
+    my $path="$ENV{HOME}/.mathtomath/$format/";
+    if(-e "$path$type"){
+	open(my $in,'<',"$path$type") or die "Failed to open $path$type: $!";
+	local $/;
+	my $options=$parser->parse(<$in>);
+	$options // die "Failed to parse $path$type for format $format";
+	close $in;
+	return %$options;
+    }
+    #configuration file does not exists, try to create it
+    say "Creating configuration file $path$type";
+    make_path($path);
+    open(my $out,'>',"$path$type") or die "Failed to create $path$type: $!";
+    close $out;
+    return ();
 }
 
 #generate a printer of the given class and set options and rules according to
@@ -201,7 +210,7 @@ sub gen_printer{
     my %override=@_;#
     my $format=$parser_class;
     $format =~ s/^Math::ToMath::Printer:://;
-    #default options from configuration file
+    #default options/rules from configuration files
     my %options=get_format_config($format,"options");
     #additional options (e.g. from command line)
     @options{keys %{$override{options}}}=values %{$override{options}};
