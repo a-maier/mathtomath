@@ -10,7 +10,7 @@
 
 %%
 
-input: /* empty */
+input: /* empty */ {return {}}
        | optionlist
 ;
 

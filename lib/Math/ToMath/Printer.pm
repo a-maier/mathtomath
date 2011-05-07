@@ -67,6 +67,7 @@ sub init{
 	0       => Operator->new(name => '',prec => 0),
 	);
     #TODO: set default options
+    %{$self->{options}}=();
 #special output for certain functions
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
     %{$self->{symbols}}=reverse $self->get_config(Symbols->get_symbol_file_for_class($self->{format}));
