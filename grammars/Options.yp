@@ -53,7 +53,7 @@ sub _lexer {
     	return('ASSIGN',$1) if s/^(=>?)//;
 	return('SEP',$1) if s/^(;|,)//;
     	return('ANY',$1) if s/^\\("|')//;
-    	return('ANY',$2) if s/^("|')(.*?[^\\])\1//;
+    	return('ANY',$2) if s/^("|')(.*?[^\\])\1//s;
     	return('ANY',$1) if s/^(.)//;
     }
 }
