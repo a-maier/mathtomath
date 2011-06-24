@@ -1,5 +1,5 @@
 package Math::ToMath::Printer::Form;
-#define the output in LaTeX format
+#define the output in Form format
 
 use Math::ToMath::Operator qw(Operator);
 use 5.10.1;
