@@ -345,7 +345,7 @@ sub replace_local{
     my $self=shift;
     my $_=shift;
     for my $pattern (keys %{$self->{rules}->{local}}){
-	s/$pattern/$self->{rules}->{local}->{$pattern}/ee;
+	eval("s/$pattern/$self->{rules}->{local}->{$pattern}/");
     }
     return $_
 }
@@ -387,7 +387,7 @@ sub convert{
     my $_=$self->to_string($expression);
     #final formatting for output string
     for my $pattern (keys %{$self->{rules}->{global}}){
-	s/$pattern/$self->{rules}->{global}->{$pattern}/ee;
+	eval("s/$pattern/$self->{rules}->{global}->{$pattern}/g");
     }
     $_=$self->insert_line_breaks($_) if ($self->{options}->{line_length});
     return $_;
