@@ -4,8 +4,8 @@
 - fix rules: should be "true" regex substitutions
 - design consistent and comprehensive list of internal operators
 - decide what to do with comments
-- rules via cli
 - options for different levels of verbosity and strictness
 - input hinting (please enter ...)
 - Latex option for different alignments after line breaks
 - Use File::HomeDir instead of $ENV{HOME}
+- do not use eval() for rules (or at least check for errors...)
