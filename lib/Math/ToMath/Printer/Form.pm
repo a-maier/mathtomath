@@ -23,6 +23,7 @@ sub init{
 sub symbol_to_string{
     my $self=shift;
     my $_=$_[0];
+    $_=$self->replace_local($_);
     #if it contains illegal tokens, we use special form syntax [...]
     return $_ if /^(\$?[[:alpha:]][[:alnum:]]*_?|\.{3}|\[.*\])$/;
     return "[$_]";
@@ -31,7 +32,7 @@ sub symbol_to_string{
 
 sub string_to_string{
     my $self=shift;
-    return "[$_[0]]";
+    return '['.$self->replace_local($_[0]).']';
 }
 
 
