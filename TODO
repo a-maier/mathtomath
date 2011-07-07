@@ -1,12 +1,11 @@
-- documentation (pod?)
+- pod documentation for Printer and Parser modules
 - automated tests
   => Skeleton in t/
+- fix rules: should be "true" regex substitutions
 - design consistent and comprehensive list of internal operators
 - decide what to do with comments
-- improve option/rule format (allow whitespace and ',' ...)
-- options/rules via cli
 - options for different levels of verbosity and strictness
 - input hinting (please enter ...)
-- improve structure/infrastructure
 - Latex option for different alignments after line breaks
 - Use File::HomeDir instead of $ENV{HOME}
+- do not use eval() for rules (or at least check for errors...)

@@ -44,8 +44,12 @@ my $strict;
 my $in_format;
 my @out_formats;
 my $expression;
-my $raw_cl_options;
+my $cl_option_str;
+my $cl_local_rule_str;
+my $cl_global_rule_str;
 my %cl_options;
+my %cl_local_rules;
+my %cl_global_rules;
 
 =head1 OPTIONS
 
@@ -106,7 +110,9 @@ Display version number and exits
 GetOptions( 'informat|if=s' => \$in_format,
 	    'outformats|of=s' => \@out_formats,
 	    'expression|e=s' => \$expression,
-	    'options|o=s' => \$raw_cl_options,
+	    'options|o=s' => \$cl_option_str,
+	    'rules|global_rules=s' => \$cl_global_rule_str,
+	    'local_rules=s' => \$cl_local_rule_str,
 	    'strict!' => \$strict,
 	    'quiet!' => \$quiet,
 	    'verbose!'=> \$verbose,
@@ -123,9 +129,19 @@ if ($help) {
     pod2usage(-verbose => 1);
 }
 
-if($raw_cl_options){
+if($cl_option_str){
     my $parser=Math::ToMath::Options->new();
-    %cl_options = %{$parser->parse($raw_cl_options)};
+    %cl_options = %{$parser->parse($cl_option_str)};
+}
+
+if($cl_global_rule_str){
+    my $parser=Math::ToMath::Options->new();
+    %cl_global_rules = %{$parser->parse($cl_global_rule_str)};
+}
+
+if($cl_local_rule_str){
+    my $parser=Math::ToMath::Options->new();
+    %cl_local_rules = %{$parser->parse($cl_local_rule_str)};
 }
 
 @out_formats = ('Generic') unless @out_formats;
@@ -174,7 +190,13 @@ else{
 #create output in the desired format
 foreach my $out_format (@out_formats){
     #dd $tree;
-    my $printer=gen_printer($out_format,options => \%cl_options);
+    my $printer=gen_printer
+	(
+	 $out_format
+	 ,options => \%cl_options
+	 ,global_rules => \%cl_global_rules
+	 ,local_rules => \%cl_local_rules
+	);
     say "Output format: ",$printer->format unless $quiet;
     say $printer->convert($tree);
 }
