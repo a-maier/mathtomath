@@ -1,7 +1,7 @@
 /* This is the grammar for general mathematical formulas */
 %{
 use Math::ToMath qw(:all);
-#use Data::Dump;
+use Data::Dump;
 #special symbols
 my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 %}
@@ -104,33 +104,75 @@ wildcard: symbol WILDCARD {Expression->new(name => $_[2],is => 'operator',args =
 
 %%
 
+
+my %description=(
+    NUMBER => 'a number',
+    SYMBOL => 'a symbol',
+    ID => "'==='",
+    NE => "'!='",
+    GE => "'>='",
+    LE => "'<='",
+    UMINUS => "unary '-'",
+    WILDCARD => "a wildcard"
+    );
+
+my $cache_size=4;
+
 sub _error {
-    if(exists $_[0]->YYData->{ERRMSG}) {
-	print $_[0]->YYData->{ERRMSG};
-        delete $_[0]->YYData->{ERRMSG};
+    my $parser=shift;
+
+    if(exists $parser->YYData->{ERRMSG}) {
+	print $parser->YYData->{ERRMSG};
+        delete $parser->YYData->{ERRMSG};
         return;
-    };	
-    print "Syntax error.\n";
+    };
+    my $what=$parser->YYCurval?("'".$parser->YYCurval."'"):"end of input";
+    my @expected= map{$_="'$_'"} grep{$_} ($parser->YYExpect);
+    map{s/^'([[:upper:]]+)'$/$description{$1}/e} @expected;
+    my $here=substr(
+	$parser->{cache}.$parser->YYData->{INPUT},
+	0,
+	2*$cache_size-1
+	);
+    $parser->{error_desc} = "Syntax error: ";
+    if(!@expected){
+	$parser->{error_desc}= "unexpected token $what\n";
+    }
+    elsif(grep {$_ eq $what} @expected){
+	$parser->{error_desc} .= "multiple occurence of non-associative operator '$what'\n";
+    }
+    else{
+	$expected[$#expected]="or $expected[$#expected]" if $#expected;
+	local $"=', ';
+	$parser->{error_desc} .= "read $what, expected @expected\n";
+    }
+
+    $parser->{error_desc} .= "   HERE>>$here<<HERE\n" if $here;
+    return;
 }
 
 sub _lexer {
     my $parser =shift;
     
     return('',undef) if $parser->YYData->{INPUT} eq '';
-
+    my ($type,$token);
     for ($parser->YYData->{INPUT}) {
-    	s/^\s+//;
+    	s/^(\s+)//;
+	$parser->{cache}.=$1;
     	# first check for reals, then for integers
-	return('NUMBER',$1) if s/^(\d*\.\d+|\d+\.\d*)//; 
-	return('NUMBER',$1) if s/^(\d+)//; 
-	return('SYMBOL',$1) if s/^([[:alpha:]]\w*)//;
-	return('ID',$1) if s/^(==)//;
-	return('NE',$1) if s/^(!=)//;
-	return('LE',$1) if s/^(<=|=>)//;
-	return('GE',$1) if s/^(=>|<=)//;
-	return('WILDCARD',$1) if s/^(\?{1,3})//;
-        return($1,$1) if s/^(.)//s;
+	if   (s/^(\d*\.\d+|\d+\.\d*)//) {($type,$token)=('NUMBER',$1)} 
+	elsif(s/^(\d+)//)               {($type,$token)=('NUMBER',$1)} 
+	elsif(s/^([[:alpha:]]\w*)//)    {($type,$token)=('SYMBOL',$1)}
+	elsif(s/^(==)//)                {($type,$token)=('ID',$1)}
+	elsif(s/^(!=)//)                {($type,$token)=('NE',$1)}
+	elsif(s/^(<=|=>)//)             {($type,$token)=('LE',$1)}
+	elsif(s/^(=>|<=)//)             {($type,$token)=('GE',$1)}
+	elsif(s/^(\?{1,3})//)           {($type,$token)=('WILDCARD',$1)}
+        elsif(s/^(.)//s)                {($type,$token)=($1,$1)}
     }
+    $parser->{cache}.=$token;
+    $parser->{cache}=substr($parser->{cache},-$cache_size);
+    return($type,$token);
 }
 
 sub parse {

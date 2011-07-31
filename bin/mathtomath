@@ -167,7 +167,7 @@ if($in_format){
     my $parser_class = Parser->get_parser($in_format);
     my $parser=$parser_class->new;
     say "Parsing $in_format expression" if $verbose;
-    $tree=$parser->parse($expression) or die "Failed to parse expression!";
+    $tree=$parser->parse($expression) or die "Failed to parse expression:\n   $parser->{error_desc}";
 }
 else{
     #no input format is given, try all possibilities
