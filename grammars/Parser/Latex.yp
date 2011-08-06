@@ -259,7 +259,7 @@ sub _lexer {
 		    ;
 	    }
 	}
-	elsif(s/^(\\\})//)                 {
+	elsif(s/^(\\\}|[\)\]\}])//)                 {
 	    $token=$1;
 	    $type=($token eq '\}')?'CBC':$token;
 	    my $bracket =$token;
