@@ -142,7 +142,7 @@ sub _error {
 	$parser->{error_desc}.= "unexpected token $what\n";
     }
     elsif(grep {$_ eq $what} @expected){
-	$parser->{error_desc} .= "multiple occurence of non-associative operator '$what'\n";
+	$parser->{error_desc} .= "multiple occurence of non-associative operator $what\n";
     }
     elsif(
 	#if we are at the end of input and there are unclosed brackets
