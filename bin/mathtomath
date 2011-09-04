@@ -31,6 +31,7 @@ use Getopt::Long;
 use Pod::Usage;
 use Math::ToMath::Options;
 use File::Path qw(make_path);
+use File::HomeDir;
 
 my $version;
 
@@ -207,7 +208,7 @@ sub get_format_config{
     my $format=shift;
     my $type=shift;
     my $parser=Math::ToMath::Options->new();
-    my $path="$ENV{HOME}/.mathtomath/$format/";
+    my $path=File::HomeDir->my_home."/.mathtomath/$format/";
     if(-e "$path$type"){
 	open(my $in,'<',"$path$type") or die "Failed to open $path$type: $!";
 	local $/;
