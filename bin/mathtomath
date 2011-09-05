@@ -31,6 +31,7 @@ use Getopt::Long;
 use Pod::Usage;
 use Math::ToMath::Options;
 use File::Path qw(make_path);
+use File::HomeDir;
 
 my $version;
 
@@ -167,7 +168,7 @@ if($in_format){
     my $parser_class = Parser->get_parser($in_format);
     my $parser=$parser_class->new;
     say "Parsing $in_format expression" if $verbose;
-    $tree=$parser->parse($expression) or die "Failed to parse expression!";
+    $tree=$parser->parse($expression) or die "Failed to parse expression:\n   $parser->{error_desc}";
 }
 else{
     #no input format is given, try all possibilities
@@ -207,7 +208,7 @@ sub get_format_config{
     my $format=shift;
     my $type=shift;
     my $parser=Math::ToMath::Options->new();
-    my $path="$ENV{HOME}/.mathtomath/$format/";
+    my $path=File::HomeDir->my_home."/.mathtomath/$format/";
     if(-e "$path$type"){
 	open(my $in,'<',"$path$type") or die "Failed to open $path$type: $!";
 	local $/;

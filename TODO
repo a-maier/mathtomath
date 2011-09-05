@@ -7,5 +7,4 @@
 - options for different levels of verbosity and strictness
 - input hinting (please enter ...)
 - Latex option for different alignments after line breaks
-- Use File::HomeDir instead of $ENV{HOME}
 - do not use eval() for rules (or at least check for errors...)

@@ -154,7 +154,7 @@ sub _lexer {
 	return('LEFT',$1) if s/^(\\left)//;
 	return('RIGHT',$1) if s/^(\\right)//;
 	return('ENDROW',$1) if(s/^(\\\\)//);
-	return('ANY',$1) if s/^(\\[[:alpha:]]*|.)//s;
+	return('ANY',$1) if s/^(\\([[:alpha:]]+|\{|\})?|.)//s;
     }
 }
 

@@ -264,62 +264,138 @@ sequence: term ',' term {Expression->new(name =>$_[2],is => 'operator',args => [
 
 %%
 
+
+my $cache_size=4;
+
 sub _error {
-    if(exists $_[0]->YYData->{ERRMSG}) {
-	print $_[0]->YYData->{ERRMSG};
-        delete $_[0]->YYData->{ERRMSG};
+    my $parser=shift;
+
+    if(exists $parser->YYData->{ERRMSG}) {
+	print $parser->YYData->{ERRMSG};
+        delete $parser->YYData->{ERRMSG};
         return;
-    };	
-    print "Syntax error.\n";
+    };
+    my $what=$parser->YYCurval?("'".$parser->YYCurval."'"):"end of input";
+    my @expected= map{$_="'$_'"} grep{$_} ($parser->YYExpect);
+    #there are too many possible types, we don't want to list them all
+    #map{s/^'([[:upper:]]+)'$/$description{$1}/e} @expected;
+    my $here=substr(
+	$parser->{cache}.$parser->YYData->{INPUT},
+	0,
+	2*$cache_size-1
+	);
+    $parser->{error_desc} = "Syntax error: ";
+    if($what =~ /^'[\)\]\}]'$/){
+	$parser->{error_desc}.= "unmatched closing bracket: $what\n";
+    }
+    elsif(!@expected){
+	$parser->{error_desc}.= "unexpected token $what\n";
+    }
+    elsif(grep {$_ eq $what} @expected){
+	$parser->{error_desc} .= "multiple occurence of non-associative operator $what\n";
+    }
+    elsif(
+	#if we are at the end of input and there are unclosed brackets
+	# then that is the problem
+	(! $parser->YYCurval)
+	&& (grep {/^'[\)\]\}]'$/} @expected)
+	&& (grep {$_>0} values %{$parser->{bracket_level}})
+	){
+	for my $bracket (keys %{$parser->{bracket_level}}){
+	    if($parser->{bracket_level}->{$bracket}>0){
+		$parser->{error_desc} .="unmatched opening bracket '$bracket'\n";
+		$parser->{error_desc} .= "   HERE>>$parser->{bracket_cache}->{$bracket}<<HERE\n" 
+		    if $parser->{bracket_cache}->{$bracket};
+	    }
+	}
+	#don't print the end of the input - it adds basically no information
+	$here=0;
+    }
+    else{
+	$parser->{error_desc}.= "unexpected token $what\n";
+	#there are too many possible types, we don't want to list them all
+	# $expected[$#expected]="or $expected[$#expected]" if $#expected;
+	# local $"=', ';
+	# $parser->{error_desc} .= "read $what, expected @expected\n";
+    }
+
+    $parser->{error_desc} .= "   HERE>>$here<<HERE\n" if $here;
+    return;
 }
+
 sub _lexer {
     my $parser =shift;
     
     return('',undef) if $parser->YYData->{INPUT} eq '';
 
+    my ($type,$token);
     for ($parser->YYData->{INPUT}) {
-        s/^\s+//;
+    	s/^(\s+)//;
+	$parser->{cache}.=$1;
+
     	# first check for reals, then for integers
-	return('NUMBER',$1) if s/^(\d*\.\d+|\d+\.\d*)//; 
-	return('NUMBER',$1) if s/^(\d+)//; 
-	return('SYMBOL',$1) if s/^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)//;
+	if(s/^(\d*\.\d+|\d+\.\d*)//) {($type,$token)=('NUMBER',$1)} 
+	elsif(s/^(\d+)//) {($type,$token)=('NUMBER',$1)} 
+	elsif(s/^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)//) {($type,$token)=('SYMBOL',$1)}
 	#named characters
-	return('SYMBOL',$1) if s/^(\\\[.*?\])//;
-	return('STRING',$1) if s/^"(.*?[^\\])"//s;
-	return('FBOX',$1) if s/^(\\´)//;
-	return('PUT',$1) if s/^(>{2,3})//;
-	return('SET',$1) if s/^(=\.|\^?:?=)//;
-	return('POST',$1) if s$^(//)$$;
-	return('OSET',$1) if s/^([\/\*\+-]=)//;
-	return('REPL',$1) if s$^(/?/\.)$$;
-	return('RULE',$1) if s/^([:-]>)//;
-	return('COND',$1) if s/^(\/;)//;
-	return('CAT',$1) if s/^(~~)//;
-	return('REP',$1) if s/^(\.{2,3})//;
-	return('OR',$1) if s/^(\|\|)//;
-	return('AND',$1) if s/^(&&)//;
-	return('CMP',$1) if s/^([<>]=?|[!=]=)//;
-	return('SPAN',$1) if s/^(;;)//;
-	return('DIVIDE',$1) if s$^(\\?/)$$;
-	return('NCMULTIPLY',$1) if s/^(\*\*)//;
-	return('SQRT',$1) if s/^(\\@)//;
-	return('STRINGJOIN',$1) if s/^(<>)//;
-	return('FAC',$1) if s/^(!!?)//;
-	return('MAPPLY',$1) if s/^([\/@]@@?)//;
-	return('INC',$1) if s/^(\+\+|--)//;
-	return('PARTO',$1) if s/^(\[\[)//;
-	return('PARTC',$1) if s/^(\]\])//;
-	return('SUBSCRIPT',$1) if s/^(\\_)//;
-	return('OVERSCRIPT',$1) if s/^(\\&)//;
-	return('UNDERSCRIPT',$1) if s/^(\\\+)//;
-	return('GET',$1) if s/^(<<)//;
-	return('MESSAGENAME',$1) if s/^(::)//;
-	return('PATTERN',$1) if s/^(_{1,3})//;
-	return('EXP',$1) if s/^(\*\^)//;
-	return('ACCURACY',$1) if s/^(´´)//;
-	return('PRECISION',$1) if s/^(´)//;
-        return($1,$1) if s/^(.)//s;
+	elsif(s/^(\\\[.*?\])//) {($type,$token)=('SYMBOL',$1)}
+	elsif(s/^"(.*?[^\\])"//s) {($type,$token)=('STRING',$1)}
+	elsif(s/^(\\´)//) {($type,$token)=('FBOX',$1)}
+	elsif(s/^(>{2,3})//) {($type,$token)=('PUT',$1)}
+	elsif(s/^(=\.|\^?:?=)//) {($type,$token)=('SET',$1)}
+	elsif(s$^(//)$$) {($type,$token)=('POST',$1)}
+	elsif(s/^([\/\*\+-]=)//) {($type,$token)=('OSET',$1)}
+	elsif(s$^(/?/\.)$$) {($type,$token)=('REPL',$1)}
+	elsif(s/^([:-]>)//) {($type,$token)=('RULE',$1)}
+	elsif(s/^(\/;)//) {($type,$token)=('COND',$1)}
+	elsif(s/^(~~)//) {($type,$token)=('CAT',$1)}
+	elsif(s/^(\.{2,3})//) {($type,$token)=('REP',$1)}
+	elsif(s/^(\|\|)//) {($type,$token)=('OR',$1)}
+	elsif(s/^(&&)//) {($type,$token)=('AND',$1)}
+	elsif(s/^([<>]=?|[!=]=)//) {($type,$token)=('CMP',$1)}
+	elsif(s/^(;;)//) {($type,$token)=('SPAN',$1)}
+	elsif(s$^(\\?/)$$) {($type,$token)=('DIVIDE',$1)}
+	elsif(s/^(\*\*)//) {($type,$token)=('NCMULTIPLY',$1)}
+	elsif(s/^(\\@)//) {($type,$token)=('SQRT',$1)}
+	elsif(s/^(<>)//) {($type,$token)=('STRINGJOIN',$1)}
+	elsif(s/^(!!?)//) {($type,$token)=('FAC',$1)}
+	elsif(s/^([\/@]@@?)//) {($type,$token)=('MAPPLY',$1)}
+	elsif(s/^(\+\+|--)//) {($type,$token)=('INC',$1)}
+	elsif(s/^(\\_)//) {($type,$token)=('SUBSCRIPT',$1)}
+	elsif(s/^(\\&)//) {($type,$token)=('OVERSCRIPT',$1)}
+	elsif(s/^(\\\+)//) {($type,$token)=('UNDERSCRIPT',$1)}
+	elsif(s/^(<<)//) {($type,$token)=('GET',$1)}
+	elsif(s/^(::)//) {($type,$token)=('MESSAGENAME',$1)}
+	elsif(s/^(_{1,3})//) {($type,$token)=('PATTERN',$1)}
+	elsif(s/^(\*\^)//) {($type,$token)=('EXP',$1)}
+	elsif(s/^(´´)//) {($type,$token)=('ACCURACY',$1)}
+	elsif(s/^(´)//) {($type,$token)=('PRECISION',$1)}
+	elsif(s/^(\[\[|[\(\[\{])//){
+	    $token=$1;
+	    $type=($token eq '\{')?'PARTO':$token;
+	    # store some information - if there is a syntax error this
+	    # can help to identify its source
+	    ++$parser->{bracket_level}->{$token};
+	    if($parser->{bracket_level}->{$token}==1){
+		$parser->{bracket_cache}->{$token}=
+		    substr($parser->{cache},-$cache_size/2)
+		    .$token
+		    .substr($parser->YYData->{INPUT},0,$cache_size/2)
+		    ;
+	    }
+	}
+	elsif(s/^(\]\]|[\)\]\}])//){
+	    $token=$1;
+	    $type=($token eq '\}')?'PARTC':$token;
+	    my $bracket =$token;
+	    $bracket =~ tr/)]}/([{/;
+	    --$parser->{bracket_level}->{$bracket};
+	}
+        elsif(s/^(.)//s) {($type,$token)=($1,$1)}
     }
+    $parser->{cache}.=$token;
+    $parser->{cache}=substr($parser->{cache},-$cache_size);
+    return ($type,$token);
 }
 
 sub parse {
