@@ -127,7 +127,7 @@ sub bracket_to_string{
 # TODO: or dying on error
 sub symbol_to_string{
     my $self=shift;
-    my $_=$_[0];
+    my $_=$self->replace_local($_[0]);
     #greek letters
     if(/^\*\*(.*)\*\*$/ and $self->{greek_symbols}->{$1}){
 	s/^\*\*|\*\*$//g;
@@ -135,9 +135,9 @@ sub symbol_to_string{
 	$_='\['.(ucfirst).']';
 	return $self->replace_local($_);
     }
-    #if it contains illegal tokens, we transform it into a string
-    return $self->string_to_string($_[0]) unless /^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)$/;
-    return $self->replace_local($_);
+    return $_ if(/^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)$/);
+    #the symbol contains illegal tokens, we transform it into a string
+    return $self->string_to_string($_[0]);
 }
 
 
