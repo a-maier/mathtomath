@@ -39,7 +39,8 @@ sub get_parsers {
 sub get_parser {
     my $class = shift;
     my $name = shift;
-    my @matching = grep /::\Q$name\E$/, $class->get_parsers;
+    my @matching = grep /::\Q$name\E$/, $class->get_parsers
+	or die "Found no parser for $name\n";
     return $matching[0];
 }
 

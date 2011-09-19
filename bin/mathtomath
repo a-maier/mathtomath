@@ -154,8 +154,8 @@ $in_format=ucfirst lc $in_format if $in_format;
 # we decide on our formats at run time,
 # so we require require and don't use use?
 foreach my $out_format (@out_formats){
-    $out_format = "Math::ToMath::Printer::$out_format";
-    eval "require $out_format; 1;";
+    my $module = "Math::ToMath::Printer::$out_format";
+    eval "require $module;" or die "Failed to load printer for $out_format";
 }
 
 if(!defined $expression){
