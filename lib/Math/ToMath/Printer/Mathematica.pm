@@ -137,7 +137,9 @@ sub symbol_to_string{
     }
     return $_ if(/^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)$/);
     #the symbol contains illegal tokens, we transform it into a string
-    return $self->string_to_string($_[0]);
+    # we can't really handle quotes - if they appear, escape them
+    s/(^|[^\\])\"/$1\\"/g;
+    return $self->string_to_string($_);
 }
 
 
