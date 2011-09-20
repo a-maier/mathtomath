@@ -154,8 +154,8 @@ $in_format=ucfirst lc $in_format if $in_format;
 # we decide on our formats at run time,
 # so we require require and don't use use?
 foreach my $out_format (@out_formats){
-    my $module = "Math::ToMath::Printer::$out_format";
-    eval "require $module;" or die "Failed to load printer for $out_format";
+   my $module = "Math::ToMath::Printer::$out_format";
+   eval "require $module;" or die "Failed to load printer for $out_format";
 }
 
 if(!defined $expression){
@@ -228,11 +228,10 @@ sub get_format_config{
 #generate a printer of the given class and set options and rules according to
 # configuration files and command line options
 sub gen_printer{
-    my $printer_class = shift;
+    my $format=shift;
+    my $printer_class = "Math::ToMath::Printer::$format";
     my $printer=$printer_class->new;
-    my %override=@_;#
-    my $format=$printer_class;
-    $format =~ s/^Math::ToMath::Printer:://;
+    my %override=@_;
     #default options/rules from configuration files
     my %options=get_format_config($format,"options");
     my %local_rules=get_format_config($format,"local_rules");
