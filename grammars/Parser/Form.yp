@@ -170,8 +170,7 @@ sub _lexer {
     return('',undef) if $parser->YYData->{INPUT} eq '';
     my ($type,$token);
     for ($parser->YYData->{INPUT}) {
-    	s/^(\s+)//;
-	$parser->{cache}.=$1;
+    	s/^(\s+)// and $parser->{cache}.=$1;
 
 	#special symbols of the type [...]
     	if($symbol_mode and s/^\[//){

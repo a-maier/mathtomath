@@ -330,8 +330,7 @@ sub _lexer {
 
     my ($type,$token);
     for ($parser->YYData->{INPUT}) {
-    	s/^(\s+)//;
-	$parser->{cache}.=$1;
+    	s/^(\s+)// and $parser->{cache}.=$1;
 
     	# first check for reals, then for integers
 	if(s/^(\d*\.\d+|\d+\.\d*)//) {($type,$token)=('NUMBER',$1)} 
