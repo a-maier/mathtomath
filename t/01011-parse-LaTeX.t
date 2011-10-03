@@ -4,7 +4,6 @@ use Test::More;
 use Math::ToMath qw(:all);
 my @expressions=(
     '-1',
-    'x',
     'x\*y',
     'x \* y', 
     'x \cdot y', 
