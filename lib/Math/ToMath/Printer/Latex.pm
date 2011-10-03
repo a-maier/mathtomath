@@ -167,10 +167,14 @@ sub power{
     my $op=shift;
     my $args=shift;
     my %tree_info=@_;
-    $tree_info{last_op}='^';
     #dd $$args[0];
-    my $real_args=$self->fall_through_bracket($$args[1]);
-    my $arg_str=$self->to_string($real_args,%tree_info);
+    my $filtered_exponent=$self->fall_through_bracket($$args[1]);
+    #this is a hack: by giving a *wrong* last operator,
+    # we make sure that the exponent does not introduce a superfluous bracket
+    # due to operator precedence or associativity
+    $tree_info{last_op}='0';
+    my $arg_str=$self->to_string($filtered_exponent,%tree_info);
+    $tree_info{last_op}='^';
     my $base_str;
     ($base_str,%tree_info)=$self->to_string($$args[0],%tree_info);
     my $string= 
