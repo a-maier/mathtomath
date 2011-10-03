@@ -137,8 +137,8 @@ sub ratio_as_frac{
 sub product{
     my $self=shift;
     shift;
-    my %tree_info=@_;
     my $args=shift;
+    my %tree_info=@_;
     my $string;
     my ($string_left,$string_right);
     my (%tree_info_left,%tree_info_right);
