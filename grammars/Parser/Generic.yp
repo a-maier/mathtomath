@@ -8,6 +8,7 @@ my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PAC
 
 %token NUMBER
 %token SYMBOL
+%token STRING
 
 %left ';'
 %left ','
@@ -25,7 +26,8 @@ input: /* empty */
        | term	
 ;
 
-term:	symbol
+term:	string
+	| symbol
 	| number
 	| relation 
 	| operation
@@ -45,6 +47,8 @@ symbol:	SYMBOL	{
 		}
 ;
 
+string: STRING {Expression->new(name =>$_[1],is => 'string')}
+;
 
 number: NUMBER 	{Expression->new(name =>$_[1],is => 'number')}
 ;
@@ -182,6 +186,7 @@ sub _lexer {
 	if   (s/^(\d*\.\d+|\d+\.\d*)//) {($type,$token)=('NUMBER',$1)} 
 	elsif(s/^(\d+)//)               {($type,$token)=('NUMBER',$1)} 
 	elsif(s/^([[:alpha:]]\w*)//)    {($type,$token)=('SYMBOL',$1)}
+	elsif(s/^"(.*?[^\\])"//s)       {($type,$token)=('STRING',$1)}
 	elsif(s/^(==)//)                {($type,$token)=('ID',$1)}
 	elsif(s/^(!=)//)                {($type,$token)=('NE',$1)}
 	elsif(s/^(<=|=>)//)             {($type,$token)=('LE',$1)}
