@@ -94,6 +94,7 @@ wildcard: symbol '?' {Expression->new(name => $_[2],is => 'operator',args => [$_
 	  | wildcard list {die "TODO: wildcard list"}
 	  | wildcard '!' list {die "TODO: wildcard '!' list"}
 	  | wildcard index {die "TODO: wildcard index"}
+          | wildcard symbol {die "TODO: wildcard (named set)"}	
 ;
 
 %%
