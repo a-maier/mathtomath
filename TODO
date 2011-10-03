@@ -1,10 +1,11 @@
 - pod documentation for Printer and Parser modules
-- automated tests
-  => Skeleton in t/
-- fix rules: should be "true" regex substitutions
+- more automated tests (rules, options) 
+- fix rules: using eval is evil and "" on the rhs should work
 - design consistent and comprehensive list of internal operators
-- decide what to do with comments
-- options for different levels of verbosity and strictness
+- delete comments when parsing expressions
 - input hinting (please enter ...)
 - Latex option for different alignments after line breaks
-- do not use eval() for rules (or at least check for errors...)
+- default option values
+- implement strict option
+- (add more formats: perl, c, fortran)
+- PAR
