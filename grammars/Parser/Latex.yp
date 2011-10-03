@@ -289,7 +289,7 @@ sub parse {
     for ($data){
     	#remove whitespace (is this wise?)
 	#and formating
-	s/([^\\]|^)\\( |[,!;]|([bB]igg?(l|r)?|[lL]arge|[hH]uge|text|it|sl|bf))/$1/g;
+	s/([^\\]|^)\\( |[,!;]|([bB]igg?(l|r)?|[lL]arge|[hH]uge|text|it|sl|bf|left|right))/$1/g;
 	s/\s+//g;
 	$self->YYData->{INPUT} = $_
     }
