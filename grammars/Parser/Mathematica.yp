@@ -396,7 +396,6 @@ sub _lexer {
     }
     $parser->{cache}.=$token;
     $parser->{cache}=substr($parser->{cache},-$cache_size);
-    print "parse ($type,$token)\n";
     return ($type,$token);
 }
 
