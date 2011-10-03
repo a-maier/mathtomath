@@ -169,7 +169,7 @@ relation:	term SAME term     {Expression->new(name =>$_[2],is => 'operator',args
 
 operation:	term ';' term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term ';'		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1]])}
-		| term '&' term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
+		| term '&'		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1]])}
 		| term REPL term	{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term RULE term	{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 		| term CAT term 	{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
@@ -338,6 +338,8 @@ sub _lexer {
 	elsif(s/^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)//) {($type,$token)=('SYMBOL',$1)}
 	#named characters
 	elsif(s/^(\\\[.*?\])//) {($type,$token)=('SYMBOL',$1)}
+	#slots - atm treated like usual symbols
+	elsif(s/^(##?\d*)//) {($type,$token)=('SYMBOL',$1)}
 	elsif(s/^"(.*?[^\\])"//s) {($type,$token)=('STRING',$1)}
 	elsif(s/^(\\´)//) {($type,$token)=('FBOX',$1)}
 	elsif(s/^(>{2,3})//) {($type,$token)=('PUT',$1)}
@@ -353,12 +355,12 @@ sub _lexer {
 	elsif(s/^(&&)//) {($type,$token)=('AND',$1)}
 	elsif(s/^([<>]=?|[!=]=)//) {($type,$token)=('CMP',$1)}
 	elsif(s/^(;;)//) {($type,$token)=('SPAN',$1)}
-	elsif(s$^(\\?/)$$) {($type,$token)=('DIVIDE',$1)}
 	elsif(s/^(\*\*)//) {($type,$token)=('NCMULTIPLY',$1)}
 	elsif(s/^(\\@)//) {($type,$token)=('SQRT',$1)}
 	elsif(s/^(<>)//) {($type,$token)=('STRINGJOIN',$1)}
 	elsif(s/^(!!?)//) {($type,$token)=('FAC',$1)}
 	elsif(s/^([\/@]@@?)//) {($type,$token)=('MAPPLY',$1)}
+	elsif(s$^(\\?/)$$) {($type,$token)=('DIVIDE',$1)}
 	elsif(s/^(\+\+|--)//) {($type,$token)=('INC',$1)}
 	elsif(s/^(\\_)//) {($type,$token)=('SUBSCRIPT',$1)}
 	elsif(s/^(\\&)//) {($type,$token)=('OVERSCRIPT',$1)}
@@ -371,7 +373,7 @@ sub _lexer {
 	elsif(s/^(´)//) {($type,$token)=('PRECISION',$1)}
 	elsif(s/^(\[\[|[\(\[\{])//){
 	    $token=$1;
-	    $type=($token eq '\{')?'PARTO':$token;
+	    $type=($token eq '[[')?'PARTO':$token;
 	    # store some information - if there is a syntax error this
 	    # can help to identify its source
 	    ++$parser->{bracket_level}->{$token};
@@ -385,7 +387,7 @@ sub _lexer {
 	}
 	elsif(s/^(\]\]|[\)\]\}])//){
 	    $token=$1;
-	    $type=($token eq '\}')?'PARTC':$token;
+	    $type=($token eq ']]')?'PARTC':$token;
 	    my $bracket =$token;
 	    $bracket =~ tr/)]}/([{/;
 	    --$parser->{bracket_level}->{$bracket};
@@ -394,6 +396,7 @@ sub _lexer {
     }
     $parser->{cache}.=$token;
     $parser->{cache}=substr($parser->{cache},-$cache_size);
+    print "parse ($type,$token)\n";
     return ($type,$token);
 }
 

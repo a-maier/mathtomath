@@ -135,7 +135,7 @@ sub symbol_to_string{
 	$_='\['.(ucfirst).']';
 	return $self->replace_local($_);
     }
-    return $_ if(/^(([[:alpha:]]|\$)([[:alnum:]]|\$)*)$/);
+    return $_ if(/^(([[:alpha:]]|\$)([[:alnum:]]|\$)*|##?\d*)$/);
     #the symbol contains illegal tokens, we transform it into a string
     # we can't really handle quotes - if they appear, escape them
     s/(^|[^\\])\"/$1\\"/g;
