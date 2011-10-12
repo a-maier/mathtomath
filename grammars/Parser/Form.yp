@@ -15,9 +15,9 @@ my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PAC
 %nonassoc '='
 %left '+' '-'
 %left '*' '/'
+%nonassoc UN
 %left '^'
 %nonassoc '.'
-%nonassoc UN
 %%
 
 input: /* empty */
