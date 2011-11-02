@@ -85,7 +85,7 @@ my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PAC
 %right '@' # prefix function
 %nonassoc PREINC # ++ --
 %nonassoc INC # ++ -- also: \*
-%left PARTO PARTC '[' ']'# [[]] []
+%left '[' ']'
 %nonassoc '?'
 #% \!
 %right SUBSCRIPT # \_ also expr1\_expr2 \% expr3
@@ -238,8 +238,8 @@ operation:	term ';' term		{Expression->new(name =>$_[2],is => 'operator',args =>
 ;
 
 bracket: '(' term ')'	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[2]])}
-	 | term PARTO term PARTC {Expression->new(name =>['[',']'],is => 'bracket',args => [$_[1],$_[3]])}
-	 | term PARTO sequence PARTC {Expression->new(name =>['[',']'],is => 'bracket',args => [$_[1],$_[3]])}
+	 | term '[' '[' term ']' ']' {Expression->new(name =>['[',']'],is => 'bracket',args => [$_[1],$_[4]])}
+	 | term '[' '[' sequence ']' ']' {Expression->new(name =>['[',']'],is => 'bracket',args => [$_[1],$_[4]])}
 ;
 
 function:	term '[' term ']'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
@@ -371,9 +371,9 @@ sub _lexer {
 	elsif(s/^(\*\^)//) {($type,$token)=('EXP',$1)}
 	elsif(s/^(´´)//) {($type,$token)=('ACCURACY',$1)}
 	elsif(s/^(´)//) {($type,$token)=('PRECISION',$1)}
-	elsif(s/^(\[\[|[\(\[\{])//){
+	elsif(s/^([\(\[\{])//){
 	    $token=$1;
-	    $type=($token eq '[[')?'PARTO':$token;
+	    $type=$token;
 	    # store some information - if there is a syntax error this
 	    # can help to identify its source
 	    ++$parser->{bracket_level}->{$token};
@@ -385,9 +385,9 @@ sub _lexer {
 		    ;
 	    }
 	}
-	elsif(s/^(\]\]|[\)\]\}])//){
+	elsif(s/^([\)\]\}])//){
 	    $token=$1;
-	    $type=($token eq ']]')?'PARTC':$token;
+	    $type=$token;
 	    my $bracket =$token;
 	    $bracket =~ tr/)]}/([{/;
 	    --$parser->{bracket_level}->{$bracket};
