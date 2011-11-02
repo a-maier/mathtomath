@@ -17,6 +17,8 @@ sub init{
     $self->{operators}->{'='}=Operator->new(name => '=',prec => 200);
     # '??' is mapped onto a different operator
     $self->{operators}->{'??'}=Operator->new(name => '?',prec => 800,pos => 'prefix');
+    # '*' can be commutative or non-commutative, depending on the operands
+    $self->{operators}->{'**'} = $self->{operators}->{'*'};
 }
 
 #format a symbol as a string
