@@ -15,6 +15,7 @@ my @expressions=(
     # 'x(x+y)',
     'f[1,2]',
     'f[1,g[2+3]-1]',
+    'f[1,g[2+3]]',
     '$x',
     '\[Alpha]',
     '"x+y"',
@@ -23,7 +24,7 @@ my @expressions=(
     'x+{1,3,4,10}[[4]]',
     'x_+f[a__]',
     'p1.p2',
-    'f[ #[[1]] ]&/@foo'
+    'f[#[[1]]]&/@foo'
     );
 my $parser_class;
 if($parser_class=Parser->get_parser('Mathematica')){
