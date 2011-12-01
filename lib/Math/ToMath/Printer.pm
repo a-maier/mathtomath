@@ -73,7 +73,9 @@ sub init{
     %{$self->{symbols}}=reverse $self->get_config(Symbols->get_symbol_file_for_class($self->{format}));
 
     #TODO: set default options
-    %{$self->{options}}=();
+    %{$self->{options}}=(
+	line_length => ''
+	);
     for my $scope ("local","global"){
 	%{$self->{rules}->{$scope}}=();
     }
