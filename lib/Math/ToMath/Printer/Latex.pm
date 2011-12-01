@@ -26,6 +26,16 @@ sub init{
     $self->{operators}->{'\\'}= Operator->new(name => "\\\\\n",prec => 100,assoc =>'left');
     $self->{operators}->{'{'}= Operator->new(name => '\{');
     $self->{operators}->{'}'}= Operator->new(name => '\}');
+
+    $self->{options}={
+	symbols_as_text => "0",
+	list_format => "",
+	bracket_scaling => "incremental",
+	subscript_size => "0.6",
+	line_length => "40",
+	line_break => "\n&",
+	line_break_at => "[\+\-]"
+    }
 }
 
 sub number_to_string{
@@ -75,6 +85,7 @@ sub bracket_to_string{
 	$$brackets[0] eq '\{'
 	and $$brackets[1] eq '\}'
 	and defined $self->{options}->{list_format}
+	and $self->{options}->{list_format}
 	){
 	#format this list in a non-standard way (e.g. as a matrix)
 	#print 'bracket_to_string: ';dd %tree_info;
