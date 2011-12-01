@@ -48,8 +48,12 @@ sub _error {
 
 sub _lexer {
     my $parser =shift;
-    
-    return('',undef) if $parser->YYData->{INPUT} eq '';
+    if(
+	!defined $parser->YYData->{INPUT} 
+	|| $parser->YYData->{INPUT} eq ''
+	){
+	return('',undef);
+    }
     for ($parser->YYData->{INPUT}) {
     	s/^\s+//;
     	return('ASSIGN',$1) if s/^(=>?)//;
