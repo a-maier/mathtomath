@@ -4,6 +4,7 @@ package Math::ToMath::Printer::Form;
 use Math::ToMath::Operator qw(Operator);
 use 5.10.1;
 use strict;
+use warnings;
 use Data::Dump;
 #----------------------------------------------------------------------------------------------------
 use parent 'Math::ToMath::Printer';

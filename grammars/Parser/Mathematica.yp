@@ -6,6 +6,10 @@ TODO:
 %{
 use Math::ToMath qw(:all);
 use Math::BigFloat;
+use 5.10.1;
+use strict;
+use warnings;
+
 #use Data::Dump;
 my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 %}

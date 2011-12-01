@@ -1,7 +1,10 @@
 /* Grammar for line breaks in LaTeX */
 %{
 use Data::Dump;
-use feature qw(say);
+use 5.10.1;
+use strict;
+use warnings;
+
 #add hashes
 sub add{
     my @hashes=@_;

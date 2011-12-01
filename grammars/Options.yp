@@ -1,7 +1,9 @@
 /* Grammar for options and rules */
 %{
 # use Data::Dump;
-# use feature qw(say);
+use 5.10.1;
+use strict;
+use warnings;
 
 %}
 

@@ -2,7 +2,10 @@
 %{
 use Math::ToMath qw(:all);
 use Data::Dump;
-use feature "state";
+use 5.10.1;
+use strict;
+use warnings;
+
 my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
 %}
 

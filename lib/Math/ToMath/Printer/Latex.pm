@@ -3,6 +3,7 @@ package Math::ToMath::Printer::Latex;
 
 use 5.10.1;
 use strict;
+use warnings;
 use Data::Dump;
 use Math::ToMath::Operator qw(Operator);
 #----------------------------------------------------------------------------------------------------

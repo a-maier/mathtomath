@@ -3,6 +3,7 @@ package Math::ToMath::Printer;
 #all output classes inherit from this one
 use 5.10.1;
 use strict;
+use warnings;
 
 use constant Printer => __PACKAGE__;
 
