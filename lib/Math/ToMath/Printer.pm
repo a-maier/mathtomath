@@ -247,14 +247,14 @@ sub operator_to_string{
     my $last_prec=$self->operator_by_name($last_op)->prec;
     
     if ($last_prec > $operator->prec) {$string='('.$string.')'}
-    #check associativiy - only important if the previous operator equals the current one
+    #check associativity - only important if the previous operator equals the current one
     elsif($op_name eq $last_op){
 	if(! defined $operator->assoc){
 	    die "Subsequent occurence of non-associative operator ".$operator->name;
 	}
 	elsif(
-	    (($operator->assoc eq 'right') and ($tree_info{arg_num} eq 'left'))
-	    or (($operator->assoc eq 'left') and ($tree_info{arg_num} eq 'right'))
+	    (($operator->assoc eq 'right') and ($arg_num eq 'left'))
+	    or (($operator->assoc eq 'left') and ($arg_num eq 'right'))
 	    ){#the associativity has changed compared to the input format -> we need a bracket
 	    $string='('.$string.')';
 	}
