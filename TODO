@@ -1,11 +1,10 @@
 - pod documentation for Printer and Parser modules
 - more automated tests (rules, options) 
-- fix rules: using eval is evil and "" on the rhs should work
+- fix rules: using eval is evil
 - design consistent and comprehensive list of internal operators
 - delete comments when parsing expressions
 - input hinting (please enter ...)
 - Latex option for different alignments after line breaks
-- default option values
 - implement strict option
 - (add more formats: perl, c, fortran)
 - PAR
