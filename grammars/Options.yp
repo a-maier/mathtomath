@@ -14,6 +14,7 @@ use warnings;
 
 input: /* empty */ {return {}}
        | optionlist
+    | optionlist SEP {return $_[1]}
 ;
 
 optionlist: option
@@ -60,6 +61,7 @@ sub _lexer {
 	return('SEP',$1) if s/^(;|,)//;
     	return('ANY',$1) if s/^\\("|')//;
     	return('ANY',$2) if s/^("|')(.*?[^\\])\1//s;
+    	return('ANY','') if s/^("|')\1//s;
     	return('ANY',$1) if s/^(.)//;
     }
 }
