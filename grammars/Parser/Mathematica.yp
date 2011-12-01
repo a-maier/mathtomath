@@ -397,6 +397,7 @@ sub _lexer {
 	    --$parser->{bracket_level}->{$bracket};
 	}
         elsif(s/^(.)//s) {($type,$token)=($1,$1)}
+	elsif($_ eq '') {($type,$token)=(undef,'')}
     }
     $parser->{cache}.=$token;
     $parser->{cache}=substr($parser->{cache},-$cache_size);

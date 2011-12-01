@@ -280,6 +280,7 @@ sub _lexer {
 	elsif(s/^(\\\\)//)                 {($type,$token)=('LINEBREAK',$1) }
 	elsif(s/^(\\[[:alpha:]]+)//)       {($type,$token)=('CMD',$1) }
 	elsif(s/^(.)//s)                   {($type,$token)=($1,$1) }
+	elsif($_ eq '') {($type,$token)=(undef,'')}
     }
     $parser->{cache}.=$token;
     $parser->{cache}=substr($parser->{cache},-$cache_size);
