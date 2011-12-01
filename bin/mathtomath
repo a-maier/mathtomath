@@ -218,9 +218,15 @@ sub get_format_config{
 	return %$options;
     }
     #configuration file does not exists, try to create it
+    my $printer_class="Math::ToMath::Printer::$format";
+    my $default_printer=$printer_class->new;
+    my %option_values=$default_printer->$type();
     say "Creating configuration file $path$type";
     make_path($path);
     open(my $out,'>',"$path$type") or die "Failed to create $path$type: $!";
+    for my $option (keys %option_values){
+	say $out "$option = \"$option_values{$option}\";";
+    }
     close $out;
     return ();
 }
