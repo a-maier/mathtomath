@@ -163,6 +163,8 @@ if(!defined $expression){
     $expression=<>;
 }
 
+exit if $expression =~ /^\s*$/;
+
 #parse syntax tree
 if($in_format){
     my $parser_class = Parser->get_parser($in_format);
