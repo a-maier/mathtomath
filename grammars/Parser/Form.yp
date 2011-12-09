@@ -86,7 +86,7 @@ list:		'{' '}'				{Expression->new(name =>['{','}'],is => 'bracket')}
 ;
 
 sequence: term ',' term {Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-	    | term ',' sequence {Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
+	    | sequence ',' term {Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 ;
 
 index: symbol '[' term ']' {Expression->new(name =>['[',']'],is => 'bracket',args => [$_[1],$_[3]])}
