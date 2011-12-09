@@ -360,7 +360,7 @@ sub insert_line_breaks{
     use Math::ToMath::Printer::LatexSlicer;
     my $parser= Math::ToMath::Printer::LatexSlicer->new;
     $parser->init($self->{options});
-    $_=$parser->parse($_) or die "Internal error: failed to parse output string"; 
+    $_=$parser->parse($_) // die "Internal error: failed to parse output string"; 
     return $_;
 }
 

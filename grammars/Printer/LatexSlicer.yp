@@ -63,6 +63,12 @@ term: ANY				{
       					my %hash=(string=>$_[1],length=> length $_[1]);
 					\%hash
 					}
+      |  '{' arg '}'                    {
+      	      	      	      	  	my %hash;
+					$hash{length}=$_[2]->{length};
+					$hash{string}="$_[1]$_[2]->{string}$_[3]";
+					\%hash
+      	     	     			}
       |  FRAC '{' arg '}' '{' arg '}'	{
       	      	      	      	  	my %hash;
 					$hash{length}=($_[3]->{length}>$_[6]->{length})?$_[3]->{length}:$_[6]->{length};
