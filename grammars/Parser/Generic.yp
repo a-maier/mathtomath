@@ -226,6 +226,7 @@ sub _lexer {
 sub parse {
     my $self=shift;
     my $data=shift;
+    $self->{cache}='';
     for ($data){
 	$self->YYData->{INPUT} = $_
     }
