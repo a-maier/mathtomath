@@ -31,11 +31,7 @@ Math::ToMath - Convert mathematical expressions between different formats
 
 =head1 DESCRIPTION
 
-Stub documentation for Math::ToMath, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
-
-Blah blah blah.
+Collects all packages needed for the conversion of mathematical expressions between different formats.
 
 =head2 EXPORT
 
@@ -55,7 +51,7 @@ The following export tag will export all exportable shortcuts and functions:
 
 =head1 SEE ALSO
 
-...
+mathtomath
 
 =head1 AUTHOR
 
