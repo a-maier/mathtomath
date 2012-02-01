@@ -4,6 +4,7 @@ package Math::ToMath::Printer;
 use 5.10.1;
 use strict;
 use warnings;
+no warnings qw(recursion);
 
 use constant Printer => __PACKAGE__;
 

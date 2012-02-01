@@ -5,6 +5,7 @@ use Math::ToMath::Operator qw(Operator);
 use 5.10.1;
 use strict;
 use warnings;
+no warnings qw(recursion);
 use Data::Dump;
 #----------------------------------------------------------------------------------------------------
 use parent 'Math::ToMath::Printer';
