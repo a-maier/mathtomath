@@ -34,7 +34,7 @@ sub init{
 	bracket_scaling => "incremental",
 	subscript_size => "0.6",
 	line_length => "40",
-	line_break => "\n&",
+	line_break => "\\\\\n&",
 	line_break_at => "[\+\-]"
     }
 }
