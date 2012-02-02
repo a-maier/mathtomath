@@ -4,6 +4,12 @@ TODO:
       - improve support for named characters
 */
 %{
+=head1 NAME
+
+Math::ToMath::Parser::Mathematica - Parser for expressions in Mathematica format
+
+=cut
+
 use Math::ToMath qw(:all);
 use Math::BigFloat;
 use 5.10.1;
@@ -12,6 +18,43 @@ use warnings;
 
 #use Data::Dump;
 my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
+
+=head1 SYNOPSIS
+
+ use Math::ToMath::Parser::Mathematica;
+
+ my $parser=Math::ToMath::Parser::Mathematica->new();
+ my $expression=$parser->parse($expression_string)
+
+
+=head1 DESCRIPTION
+
+Math::ToMath::Parser::Mathematica provides a parser for expressions in Mathematica's InputFormat. This means it is quite a bit more restrictive than Mathematica itself. In many cases multiplication signs are needed where Mathematica would just silently insert them. In addition quite a few Mathematica operators are not implemented.
+
+=over 2
+
+=item B<new>
+
+Create a new parser object
+
+=item B<parse>
+
+Parse the given expression string and return a corresponding Math::ToMath::Expression object.
+
+=back
+
+=head1 SEE ALSO
+
+TODO: link to Wolfram web site?
+
+L<mathtomath>
+
+L<Math::ToMath::Printer::Mathematica>
+
+and other Math::ToMath::Parser:: packages
+
+=cut
+
 %}
 
 %token NUMBER

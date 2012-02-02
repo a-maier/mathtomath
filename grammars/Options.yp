@@ -1,9 +1,47 @@
 /* Grammar for options and rules */
 %{
+
+=head1 NAME
+
+Math::ToMath::Options - Parser for options and replacement rules
+
+=cut
+
 # use Data::Dump;
 use 5.10.1;
 use strict;
 use warnings;
+
+=head1 SYNOPSIS
+
+ use Math::ToMath::Options;
+
+ my $parser=Math::ToMath::Options->new();
+ my %options=%{ $parser->parse($option_string) }
+
+
+=head1 DESCRIPTION
+
+Math::ToMath::Options objects have a single purpose: to parse a given string for options (or, equivalently, rules). Each option has to have the form C<type =E<gt> value> or C<type = value>. Options are separated by a comma or a semicolon. Usually white space is ignored, but everything inside a pair of single or double quotes will be kept literally. Literal double (or single) quotes that are not inside a pair of single (double) quotes should be escaped: \". The following methods are provided:
+
+=over 2
+
+=item B<new>
+
+Create a new parser object
+
+=item B<parse>
+
+Parse the given string for options (or rules) and returns a reference to a corresponding hash. 
+
+=back
+
+=head1 SEE ALSO
+
+L<mathtomath>
+
+=cut
+
 
 %}
 

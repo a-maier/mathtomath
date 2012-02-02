@@ -1,5 +1,12 @@
 /* This is the grammar for general mathematical formulas */
 %{
+
+=head1 NAME
+
+Math::ToMath::Parser::Generic - Parser for generic expressions
+
+=cut
+
 use Math::ToMath qw(:all);
 use Data::Dump;
 use 5.10.1;
@@ -8,6 +15,43 @@ use warnings;
 
 #special symbols
 my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
+
+=head1 SYNOPSIS
+
+ use Math::ToMath::Parser::Generic;
+
+ my $parser=Math::ToMath::Parser::Generic->new();
+ my $expression=$parser->parse($expression_string)
+
+
+=head1 DESCRIPTION
+
+Math::ToMath::Parser::Generic provides a parser for "generic" mathematical expressions. It can be used as a fallback if no parser exists for a specific format. The aim of the generic format is to keep the number of surprises low. This means e.g. that "3a" is interpreted as "3*a", but "a(3)" or "a3" is not interpreted as "a*3".
+
+=over 2
+
+=item B<new>
+
+Create a new parser object
+
+=item B<parse>
+
+Parse the given expression string and return a corresponding Math::ToMath::Expression object.
+
+=back
+
+=head1 SEE ALSO
+
+L<mathtomath>
+
+L<Math::ToMath::Expression>
+
+L<Math::ToMath::Printer::Generic>
+
+and other Math::ToMath::Parser:: packages
+
+=cut
+
 %}
 
 %token NUMBER

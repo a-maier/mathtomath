@@ -1,5 +1,11 @@
 /* This is the grammar for FORM */
 %{
+=head1 NAME
+
+Math::ToMath::Parser::Form - Parser for expressions in FORM format
+
+=cut
+
 use Math::ToMath qw(:all);
 use Data::Dump;
 use 5.10.1;
@@ -7,6 +13,42 @@ use strict;
 use warnings;
 
 my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
+
+=head1 SYNOPSIS
+
+ use Math::ToMath::Parser::Form;
+
+ my $parser=Math::ToMath::Parser::Form->new();
+ my $expression=$parser->parse($expression_string)
+
+
+=head1 DESCRIPTION
+
+Math::ToMath::Parser::Form provides a parser for FORM expressions. Note that this is not a parser for the entire FORM language. In particular there is no preprocessor and expressions containing preprocessor instructions or variables will most likely not be parsed successfully.
+
+=over 2
+
+=item B<new>
+
+Create a new parser object
+
+=item B<parse>
+
+Parse the given expression string and return a corresponding Math::ToMath::Expression object.
+
+=back
+
+=head1 SEE ALSO
+
+L<The FORM reference manual|http://www.nikhef.nl/~form/maindir/documentation/reference/online/online.html>
+
+L<mathtomath>
+
+L<Math::ToMath::Printer::Form>
+
+and other Math::ToMath::Parser:: packages
+
+=cut
 %}
 
 %token NUMBER
