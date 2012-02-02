@@ -359,9 +359,9 @@ sub insert_line_breaks{
     my $_=shift;
     #$_ or return $_;
     use Math::ToMath::Printer::LatexSlicer;
-    my $parser= Math::ToMath::Printer::LatexSlicer->new;
-    $parser->init($self->{options});
-    $_=$parser->parse($_) // die "Internal error: failed to parse output string"; 
+    my $slicer= Math::ToMath::Printer::LatexSlicer->new;
+    $slicer->init($self->{options});
+    $_=$slicer->slice($_) // die "Internal error: failed to parse output string"; 
     return $_;
 }
 
