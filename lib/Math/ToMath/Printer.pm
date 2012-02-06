@@ -1,6 +1,11 @@
 package Math::ToMath::Printer;
-#define the output in generic format
-#all output classes inherit from this one
+
+=head1 NAME
+
+Math::ToMath::Printer - Convert expressions to strings
+
+=cut
+
 use 5.10.1;
 use strict;
 use warnings;
@@ -17,7 +22,30 @@ use Math::ToMath qw(:all);
 use Math::ToMath::Operator qw(Operator);
 use Math::ToMath::Symbols qw(Symbols);
 use Scalar::Util qw(blessed);
-#----------------------------------------------------------------------------------------------------
+
+=head1 SYNOPSIS
+
+ use parent 'Math::ToMath::Printer';
+
+=head1 DESCRIPTION
+
+Math::ToMath::Printer provides methods to convert L<Math::ToMath::Expression> 
+objects to strings. It is intended to be used as a base class for printers 
+converting to specific formats. Therefore this manual contains rather 
+technical information; if you don't plan to write your own printer class 
+the manuals of more specific printers like L<Math::ToMath::Printer::Generic>
+might be more helpful.
+
+=over 2
+
+=cut
+
+=item B<new>
+
+Construct a new object. Calls init for initialisation. No need to overwrite 
+this in derived classes.
+
+=cut
 
 sub new{
     my $class=shift;
@@ -27,6 +55,31 @@ sub new{
     $self->init(@_);
     return $self;
 }
+
+=item B<init>
+
+Perform initialisation of a newly created object. The following has to be done:
+
+=back
+
+=over 4
+
+=item * Determine and set the output format according to the object's class.
+
+=item * Define all operators that are known to this format.
+
+=item * Read file that determines how to translate special symbols.
+
+=item * Set default options.
+
+=item * (Optional) define default rules and methods for treating (very) special expressions.
+
+=back
+
+=over 2
+
+=cut
+
 
 sub init{
     my $self=shift;
@@ -73,7 +126,6 @@ sub init{
 # e.g. for Latex we are supposed to put '**log**' => '\log' here
     %{$self->{symbols}}=reverse $self->get_config(Symbols->get_symbol_file_for_class($self->{format}));
 
-    #TODO: set default options
     %{$self->{options}}=(
 	line_length => ''
 	);
@@ -85,6 +137,14 @@ sub init{
 
 }
 
+=item B<options>
+
+If there are arguments, set options according to them. 
+Return a hash with the options and their values.
+
+=cut
+
+
 #set or read options
 sub options{
     my $self=shift;
@@ -92,7 +152,15 @@ sub options{
     return %{$self->{options}};
 }
 
-#set or read local rules
+=item B<local_rules>
+
+If there are arguments, set local rules according to them. 
+Return a hash with the local rules and their values. 
+Rules have the form LHS => RHS and act like s/LHS/RHS/;
+Local rules are applied separately to each node of the expression tree.
+
+=cut
+
 sub local_rules{
     my $self=shift;
     %{$self->{rules}->{local}}=@_ if @_;
@@ -100,13 +168,30 @@ sub local_rules{
     return %{$self->{rules}->{local}};
 }
 
-#set or read global rules
+=item B<global_rules>
+
+If there are arguments, set global rules according to them. 
+Return a hash with the global rules and their values. 
+Rules have the form LHS => RHS and act like s/LHS/RHS/;
+Global rules are applied to the (almost final) output string. Only line 
+breaks are inserted afterwards, and only if a corresponding option is set
+
+=cut
+
 sub global_rules{
     my $self=shift;
     %{$self->{rules}->{global}}=@_ if @_;
     map {$_=qr/$_/} keys %{$self->{rules}->{global}};
     return %{$self->{rules}->{global}};
 }
+
+=item B<operator_by_name>
+
+Small convenience routine which returns the Math::ToMath::operator definition 
+for the operator with the given name. If two arguments are given, redefines
+the operator with the name corresponding to the first argument.
+
+=cut
 
 sub operator_by_name{
     my $self=shift;
@@ -115,6 +200,14 @@ sub operator_by_name{
     return $self->{operators}->{$op_name}
 }
 
+=item B<symbol_by_name>
+
+For a given special symbol gets the string representation of this symbol in 
+the current format. In the two-argument form sets the representation to the 
+second argument.
+
+=cut
+
 sub symbol_by_name{
     my $self=shift;
     my $sym_name=shift;
@@ -122,12 +215,31 @@ sub symbol_by_name{
     return $self->{symbols}->{$sym_name}
 }
 
+=item B<special_by_name>
+
+Takes the name of an object. If there is a special routine to treat this 
+object, a reference to it is returned. If two arguments are given the routine
+given as the second argument is set to treat the object with the name given by
+the first argument.
+
+=cut
+
+
 sub special_by_name{
     my $self=shift;
     my $sym_name=shift;
     $self->{specials}->{$sym_name}= $_[0] if(defined $_[0]);
     return $self->{specials}->{$sym_name}
 }
+
+=item B<to_string>
+
+Main method. Takes an expression and returns the corresponding string, 
+but without applying global rules nor inserting line breaks. The current 
+node of the expression is checked and a corresponding subroutine is called.
+
+=cut
+
 
 sub to_string{
     my $self= shift;
@@ -185,8 +297,18 @@ sub to_string{
     return wantarray?($string,%tree_info):$string;
 }
 
-#format a symbol as a string, either ignoring all illegal tokens
-# TODO: or dying on error
+=item B<symbol_to_string>
+
+Takes a symbol and returns the corresponding string in the current format. 
+There are two possibilities if the symbol's name is not valid in the 
+current format. If the I<strict> option set an invalid symbol name should be 
+a fatal error. If this option is not set symbol_to_string tries to construct 
+a similar, but valid symbol name (e.g. by removing illegal characters)
+
+=cut
+
+
+# TODO: or die on error if strict is set
 sub symbol_to_string{
     my $self=shift;
     my $_=$_[0];
@@ -198,7 +320,12 @@ sub symbol_to_string{
     return ($_);
 }
 
-#format a number as a string
+=item B<number_to_string>
+
+Takes a number and returns the corresponding string in the current format. 
+
+=cut
+
 sub number_to_string{
     my $self=shift;
     my $_=$_[0];
@@ -212,14 +339,30 @@ sub number_to_string{
     return ($_);
 }
 
-#format an internal string as an output string 
+=item B<string_to_string>
+
+Takes a string (in the sense of Math::ToMath::Expression) and returns the 
+corresponding string (in the sense of perl) in the current format.
+
+=cut
+
 sub string_to_string{
     my $self=shift;
     my $_=$self->replace_local($_[0]);
     return ("\"$_\"");
 }
 
-#format an operator
+
+=item B<operator_to_string>
+
+Takes an operator and its operands and returns the corresponding string in 
+the current format. Depending on the type of the operator 
+(prefix, postfix, infix) an appropriate helper routine is called. Also takes
+care of additional brackets that might have to be inserted depending on
+operator precedence or associativity.
+
+=cut
+
 sub operator_to_string{
     my $self=shift;
     my $op_name=shift;
@@ -265,6 +408,14 @@ sub operator_to_string{
     return ($string,%tree_info)
 }
 
+=item B<prefix_operator_to_string>
+
+Takes a prefix operator and its operand and returns the corresponding string 
+in the current format. The operand is converted using B<to_string>.
+
+=cut
+
+
 sub prefix_operator_to_string{
     my $self=shift;
     my $operator=shift;
@@ -276,6 +427,14 @@ sub prefix_operator_to_string{
     $string=$self->replace_local($operator->name).$string;
     return ($string,%tree_info);
 }
+
+=item B<postfix_operator_to_string>
+
+Takes a postfix operator and its operand and returns the corresponding string 
+in the current format. The operand is converted using B<to_string>.
+
+=cut
+
 
 sub postfix_operator_to_string{
     my $self=shift;
@@ -289,6 +448,12 @@ sub postfix_operator_to_string{
     return ($string,%tree_info);
 }
 
+=item B<infix_operator_to_string>
+
+Takes an infix operator and its operands and returns the corresponding string 
+in the current format. The operands are converted using B<to_string>.
+
+=cut
 
 sub infix_operator_to_string{
     my $self=shift;
@@ -309,6 +474,15 @@ sub infix_operator_to_string{
 	)
 #join($operator->name, map {$self->to_string($_,$operator->prec)} @$args);
 }
+
+=item B<bracket_to_string>
+
+Takes a bracket and its contents and returns the corresponding string 
+in the current format. Note that functions are considered brackets by
+L<Math::ToMath::Expression> and hence are also treated by this method.
+
+=cut
+
 
 sub bracket_to_string{
     my $self=shift;
@@ -344,17 +518,32 @@ sub bracket_to_string{
     return ($string,%tree_info)
 }
 
-#use local replacement rules on argument 
+=item B<replace_local>
+
+Applies the local replacement rules to its argument. The argument should be 
+the string corresponding to a single node in the L<Math::ToMath::Expression>
+expression tree. Each rule has the form LHS => RHS and is applied as
+s/LHS/RHS/
+
+=cut
+
 sub replace_local{
     my $self=shift;
     my $_=shift;
     for my $pattern (keys %{$self->{rules}->{local}}){
+	#TODO: replace by something reasonable
 	eval("s/$pattern/$self->{rules}->{local}->{$pattern}/");
     }
     return $_
 }
 
-#return contents of a configuration file
+=item B<get_config>
+
+Reads a configuration file. Largely obsolete, but still used to read the symbol
+file during initialisation.
+
+=cut
+
 SCOPE: {
     my %config_cache;
     sub get_config{
@@ -375,16 +564,37 @@ SCOPE: {
     }
 }
 
-#merge information from processing different branches of the tree
+=item B<merge_info>
+
+Some formats need to keep additional information while processing the 
+expression tree. This method determines how to merge information coming
+form different branches.
+
+=cut
+
 sub merge_info{
 }
+
+=item B<format>
+
+Returns the format into which expressions are converted.
+
+=cut
 
 sub format{
     my $self=shift;
     return $self->{format};
 }
 
-#convert expression to current format
+
+=item B<convert>
+
+Takes a L<Math::ToMath::Expression> object and converts it into a string in
+the current format using the B<to_string> method. Then applies the global rules
+and, depending on options, inserts line breaks where appropriate.
+
+=cut
+
 sub convert{
     my $self=shift;
     my $expression=shift;
@@ -397,7 +607,13 @@ sub convert{
     return $_;
 }
 
-#insert line breaks after a certain number of characters
+=item B<insert_line_breaks>
+
+Takes a string and inserts line breaks after a certain number of characters. 
+How this is handled exactly is up to the format class.
+
+=cut
+
 #insert line breaks after a certain number of characters
 sub insert_line_breaks{
     my $self=shift;
@@ -408,7 +624,19 @@ sub insert_line_breaks{
     return $_;
 }
 
+=back
+
+=cut
+
 1;
+
+=head1 SEE ALSO
+
+L<Math::ToMath::Expression>
+
+L<Math::ToMath::Printer::Generic>
+
+other Math::ToMath::Printer::* modules
 
 =head1 AUTHOR
 
