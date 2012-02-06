@@ -390,7 +390,6 @@ sub _lexer {
 	elsif(s/^"(.*?[^\\])"//s) {($type,$token)=('STRING',$1)}
 	elsif(s/^(\\´)//) {($type,$token)=('FBOX',$1)}
 	elsif(s/^(>{2,3})//) {($type,$token)=('PUT',$1)}
-	elsif(s/^(=\.|\^?:?=)//) {($type,$token)=('SET',$1)}
 	elsif(s$^(//)$$) {($type,$token)=('POST',$1)}
 	elsif(s/^([\/\*\+-]=)//) {($type,$token)=('OSET',$1)}
 	elsif(s$^(/?/\.)$$) {($type,$token)=('REPL',$1)}
@@ -400,11 +399,13 @@ sub _lexer {
 	elsif(s/^(\.{2,3})//) {($type,$token)=('REP',$1)}
 	elsif(s/^(\|\|)//) {($type,$token)=('OR',$1)}
 	elsif(s/^(&&)//) {($type,$token)=('AND',$1)}
+	elsif(s/^(<<)//) {($type,$token)=('GET',$1)}
+	elsif(s/^(<>)//) {($type,$token)=('STRINGJOIN',$1)}
 	elsif(s/^([<>]=?|[!=]=)//) {($type,$token)=('CMP',$1)}
+	elsif(s/^(=\.|\^?:?=)//) {($type,$token)=('SET',$1)}
 	elsif(s/^(;;)//) {($type,$token)=('SPAN',$1)}
 	elsif(s/^(\*\*)//) {($type,$token)=('NCMULTIPLY',$1)}
 	elsif(s/^(\\@)//) {($type,$token)=('SQRT',$1)}
-	elsif(s/^(<>)//) {($type,$token)=('STRINGJOIN',$1)}
 	elsif(s/^(!!?)//) {($type,$token)=('FAC',$1)}
 	elsif(s/^([\/@]@@?)//) {($type,$token)=('MAPPLY',$1)}
 	elsif(s$^(\\?/)$$) {($type,$token)=('DIVIDE',$1)}
@@ -412,7 +413,6 @@ sub _lexer {
 	elsif(s/^(\\_)//) {($type,$token)=('SUBSCRIPT',$1)}
 	elsif(s/^(\\&)//) {($type,$token)=('OVERSCRIPT',$1)}
 	elsif(s/^(\\\+)//) {($type,$token)=('UNDERSCRIPT',$1)}
-	elsif(s/^(<<)//) {($type,$token)=('GET',$1)}
 	elsif(s/^(::)//) {($type,$token)=('MESSAGENAME',$1)}
 	elsif(s/^(_{1,3})//) {($type,$token)=('PATTERN',$1)}
 	elsif(s/^(\*\^)//) {($type,$token)=('EXP',$1)}
