@@ -398,11 +398,13 @@ sub convert{
 }
 
 #insert line breaks after a certain number of characters
+#insert line breaks after a certain number of characters
 sub insert_line_breaks{
     my $self=shift;
     my $_=shift;
+    my $max_length=$self->{options}->{line_length}-1;
     # FIXME: See Text::Wrap! It's part of core perl.
-    s/(.{$self->{options}->{line_length}})/$1\n/g;
+    s/(.{$max_length})/$1\\\n/g;
     return $_;
 }
 

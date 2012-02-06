@@ -272,6 +272,7 @@ sub parse {
     my $data=shift;
     $self->{cache}='';
     for ($data){
+    	s/\\\s+//g;
 	$self->YYData->{INPUT} = $_
     }
     $self->YYParse( yylex => \&_lexer, yyerror => \&_error );
