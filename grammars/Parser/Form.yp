@@ -1,21 +1,28 @@
-/* This is the grammar for FORM */ %{ =head1 NAME
+/* This is the grammar for FORM */ 
+%{ 
+
+=head1 NAME
 
 Math::ToMath::Parser::Form - Parser for expressions in FORM format
 
 =cut
 
-use Math::ToMath qw(:all); use Data::Dump; use 5.10.1; use strict; use
-warnings;
+use Math::ToMath qw(:all);
+use Data::Dump;
+use 5.10.1;
+use strict;
+use warnings;
 
-my
-%special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PACKAGE__));
+my %special_symbols=Printer->get_config(
+    Symbols->get_symbol_file_for_class(__PACKAGE__)
+    );
 
 =head1 SYNOPSIS
 
  use Math::ToMath::Parser::Form;
 
- my $parser=Math::ToMath::Parser::Form->new(); my
- $expression=$parser->parse($expression_string)
+ my $parser=Math::ToMath::Parser::Form->new(); 
+ my $expression=$parser->parse($expression_string);
 
 
 =head1 DESCRIPTION
