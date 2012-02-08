@@ -143,6 +143,8 @@ term: ANY				{
       					my %hash=(string=>$_[1],length=> length $_[1]);
 					\%hash
 					}
+      |  left				{$_[1]}
+      |  right				{$_[1]}
       |  '{' arg '}'                    {
       	      	      	      	  	my %hash;
 					$hash{length}=$_[2]->{length};
