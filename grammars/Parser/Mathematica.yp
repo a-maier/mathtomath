@@ -45,9 +45,9 @@ Parse the given expression string and return a corresponding Math::ToMath::Expre
 
 =head1 SEE ALSO
 
-TODO: link to Wolfram web site?
-
 L<mathtomath>
+
+L<The Mathematica home page|http://www.wolfram.com/products/mathematica/>
 
 L<Math::ToMath::Printer::Mathematica>
 
@@ -142,8 +142,8 @@ and other Math::ToMath::Parser:: packages
 %left MESSAGENAME # ::
 # %nonassoc PIECEWISE
 #this is not mathematica default, but I guess we need it
-%nonassoc PRECISION # ´
-%nonassoc ACCURACY # ´´
+%nonassoc PRECISION # `
+%nonassoc ACCURACY # ``
 %nonassoc PATTERN # _ __ ___ 
 
 
@@ -416,8 +416,8 @@ sub _lexer {
 	elsif(s/^(::)//) {($type,$token)=('MESSAGENAME',$1)}
 	elsif(s/^(_{1,3})//) {($type,$token)=('PATTERN',$1)}
 	elsif(s/^(\*\^)//) {($type,$token)=('EXP',$1)}
-	elsif(s/^(´´)//) {($type,$token)=('ACCURACY',$1)}
-	elsif(s/^(´)//) {($type,$token)=('PRECISION',$1)}
+	elsif(s/^(``)//) {($type,$token)=('ACCURACY',$1)}
+	elsif(s/^(`)//) {($type,$token)=('PRECISION',$1)}
 	elsif(s/^([\(\[\{])//){
 	    $token=$1;
 	    $type=$token;
