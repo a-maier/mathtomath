@@ -27,13 +27,17 @@ sub to_symbol{
 
  use Math::ToMath::Parser::Latex;
 
- my $parser=Math::ToMath::Parser::Latex->new();
- my $expression=$parser->parse($expression_string)
+ my $parser=Math::ToMath::Parser::Latex->new(); my
+ $expression=$parser->parse($expression_string)
 
 
 =head1 DESCRIPTION
 
-Math::ToMath::Parser::Latex provides a parser for mathematical expressions in LaTeX format, including some extensions from tha amsmath package. It is mostly designed to work together with the corresponding printer module and therefore only understands a tiny part of what can be put inside a LaTeX math environment.
+Math::ToMath::Parser::Latex provides a parser for mathematical
+expressions in LaTeX format, including some extensions from tha amsmath
+package. It is mostly designed to work together with the corresponding
+printer module and therefore only understands a tiny part of what can be
+put inside a LaTeX math environment.
 
 =over 2
 
@@ -43,7 +47,8 @@ Create a new parser object
 
 =item B<parse>
 
-Parse the given expression string and return a corresponding Math::ToMath::Expression object.
+Parse the given expression string and return a corresponding
+Math::ToMath::Expression object.
 
 =back
 

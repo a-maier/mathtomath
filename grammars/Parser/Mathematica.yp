@@ -6,7 +6,8 @@ TODO:
 %{
 =head1 NAME
 
-Math::ToMath::Parser::Mathematica - Parser for expressions in Mathematica format
+Math::ToMath::Parser::Mathematica - Parser for expressions in
+Mathematica format
 
 =cut
 
@@ -23,13 +24,17 @@ my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PAC
 
  use Math::ToMath::Parser::Mathematica;
 
- my $parser=Math::ToMath::Parser::Mathematica->new();
- my $expression=$parser->parse($expression_string)
+ my $parser=Math::ToMath::Parser::Mathematica->new(); my
+ $expression=$parser->parse($expression_string)
 
 
 =head1 DESCRIPTION
 
-Math::ToMath::Parser::Mathematica provides a parser for expressions in Mathematica's InputFormat. This means it is quite a bit more restrictive than Mathematica itself. In many cases multiplication signs are needed where Mathematica would just silently insert them. In addition quite a few Mathematica operators are not implemented.
+Math::ToMath::Parser::Mathematica provides a parser for expressions in
+Mathematica's InputFormat. This means it is quite a bit more restrictive
+than Mathematica itself. In many cases multiplication signs are needed
+where Mathematica would just silently insert them. In addition quite a
+few Mathematica operators are not implemented.
 
 =over 2
 
@@ -39,7 +44,8 @@ Create a new parser object
 
 =item B<parse>
 
-Parse the given expression string and return a corresponding Math::ToMath::Expression object.
+Parse the given expression string and return a corresponding
+Math::ToMath::Expression object.
 
 =back
 
@@ -47,7 +53,8 @@ Parse the given expression string and return a corresponding Math::ToMath::Expre
 
 L<mathtomath>
 
-L<The Mathematica home page|http://www.wolfram.com/products/mathematica/>
+L<The Mathematica home
+page|http://www.wolfram.com/products/mathematica/>
 
 L<Math::ToMath::Printer::Mathematica>
 

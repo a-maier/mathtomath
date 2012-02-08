@@ -20,13 +20,17 @@ my %special_symbols=Printer->get_config(Symbols->get_symbol_file_for_class(__PAC
 
  use Math::ToMath::Parser::Generic;
 
- my $parser=Math::ToMath::Parser::Generic->new();
- my $expression=$parser->parse($expression_string)
+ my $parser=Math::ToMath::Parser::Generic->new(); my
+ $expression=$parser->parse($expression_string)
 
 
 =head1 DESCRIPTION
 
-Math::ToMath::Parser::Generic provides a parser for "generic" mathematical expressions. It can be used as a fallback if no parser exists for a specific format. The aim of the generic format is to keep the number of surprises low. This means e.g. that "3a" is interpreted as "3*a", but "a(3)" or "a3" is not interpreted as "a*3".
+Math::ToMath::Parser::Generic provides a parser for "generic"
+mathematical expressions. It can be used as a fallback if no parser
+exists for a specific format. The aim of the generic format is to keep
+the number of surprises low. This means e.g. that "3a" is interpreted as
+"3*a", but "a(3)" or "a3" is not interpreted as "a*3".
 
 =over 2
 
@@ -36,7 +40,8 @@ Create a new parser object
 
 =item B<parse>
 
-Parse the given expression string and return a corresponding Math::ToMath::Expression object.
+Parse the given expression string and return a corresponding
+Math::ToMath::Expression object.
 
 =back
 

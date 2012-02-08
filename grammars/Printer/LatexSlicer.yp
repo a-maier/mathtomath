@@ -22,7 +22,9 @@ use warnings;
 
 =head1 DESCRIPTION
 
-Math::ToMath::Printer::LatexSlicer objects are used by Math::ToMath::Printer::Latex to insert line breaks into the LaTeX output. They offer the following methods:
+Math::ToMath::Printer::LatexSlicer objects are used by
+Math::ToMath::Printer::Latex to insert line breaks into the LaTeX
+output. They offer the following methods:
 
 =over 2
 
@@ -36,19 +38,27 @@ Set options. See the next section for a list of possible option keys.
 
 =item B<slice>
 
-Insert line breaks into the given string according to how the option values are set.
+Insert line breaks into the given string according to how the option
+values are set.
 
 =back
 
 =head1 OPTIONS
 
-Options determine where line breaks will be inserted and can be set via the B<init> method.
+Options determine where line breaks will be inserted and can be set via
+the B<init> method.
 
 =over 2
 
 =item B<line_length>
 
-The minimal number of characters a line should have before line breaks are inserted. If ratios appear in the line, only the number of characters in either the numerator or the denominator is counted, depending on which is longer. For matrices or tables only the longest row counts. Subscript or superscript characters are usually not counted as whole characters (see B<subscript_size>).
+The minimal number of characters in a line. When a line is long enough a
+line break will be inserted directly before the next match of the
+regular expression given by B<line_break_at>. If ratios appear in the
+line, only the number of characters in either the numerator or the
+denominator is counted, depending on which is longer. For matrices or
+tables only the longest row counts. Subscript or superscript characters
+are usually not counted as whole characters (see B<subscript_size>).
 
 =item B<line_break>
 
@@ -60,7 +70,9 @@ Regular expression before which line breaks may be inserted.
 
 =item B<subscript_size>
 
-How much subscript/superscript characters count. A value of 0.5 e.g. means that two subscript characters count as much as one "usual" character towards the target B<line_length>.
+How much subscript/superscript characters count. A value of 0.5
+e.g. means that two subscript characters count as much as one "usual"
+character towards the target B<line_length>.
 
 =back
 
