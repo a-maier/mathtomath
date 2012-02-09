@@ -82,13 +82,20 @@ B<FORM>, B<LaTeX>, B<Mathematica> and a default format
 
 =item B<-o>, B<-options> I<option1=value1[,option2=value2,...]>
 
-B<TODO> Specify options for the formatting of the output. The
+Specify options for the formatting of the output. The
 supported options depend on the chosen output formats. See
 the manual B<TODO:Link> for more details
 
 =item B<-quiet>
 
-B<TODO> Suppress output messages.
+Suppress output messages.
+
+=item B<-rules, -r> I<before=E<gt>after[,before2=E<gt>after2,...]>
+
+Apply replacement rules to the output. Each occurrence of I<before> will
+be replaced by I<after>. The replacement uses regular expressions. If
+you are not familiar with those (or their perl variant) you may want to
+consult the perl regular expressions tutorial L<perlretut>.
 
 =item B<-strict>
 
@@ -262,17 +269,21 @@ sub gen_printer{
 Convert the formula for the area of a square from B<Mathematica> convention
 to B<LaTeX>:
 
-  mathtomath -if Mathematica -of LaTeX -e 'Pi*r^2'
+  mathtomath -if Mathematica -of LaTeX -e 'Pi*r^2'  # gives \pi\*r^2
 
-Not specifying an input format can lead to undefined results.
-This may in principle result to C<(v.v)^2>, but also to C<v.(v^2)>:
+Not specifying an input format can lead to undefined results:
 
-  mathtomath -e 'v.v^2'
+  mathtomath -e 'v.v^2'   # is this (v.v)^2 or v.(v^2)?
 
 This reads expressions from a file and adds line breaks after
 approximately 40 characters to the B<LaTeX> output:
 
-  mathtomath -if Mathematica -of Latex -o 'line_length=40' file_with_long_expressions
+  mathtomath -if Mathematica -of LaTeX -o 'line_length=40' file_with_long_expressions
+
+I like pi:
+
+ mathtomath -if LaTeX -of Mathematica -e '\sin(x)\equiv0' -rules='x=>Pi'   # gives Sin[Pi]==0
+
 
 =head1 FILES
 
