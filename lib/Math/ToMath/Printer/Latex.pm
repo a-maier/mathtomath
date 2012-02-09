@@ -146,6 +146,16 @@ How much subscript/superscript characters count. A value of 0.5
 e.g. means that two subscript characters count as much as one "usual"
 character towards the target B<line_length>.
 
+=item B<break_ratio>
+
+Unbalanced ratios X/Y will be rewritten to 1/Y*(X) if two conditions are
+fulfilled. First, X has to contain at least one plus or minus
+sign. Second, X has to be longer than Y by at least a factor given by
+the value of B<break_ratio>. If the value is zero, nothing will be done.
+
+The default is to break up ratios where the numerator is longer by at 
+least a factor of 5.
+
 =back
 
 =cut
@@ -176,7 +186,8 @@ sub init{
 	subscript_size => "0.6",
 	line_length => "40",
 	line_break => "\\\\\n&",
-	line_break_at => "[\+\-]"
+	line_break_at => "[\+\-]",
+	break_ratio => "5"
     }
 }
 

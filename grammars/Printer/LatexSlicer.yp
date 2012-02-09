@@ -74,6 +74,14 @@ How much subscript/superscript characters count. A value of 0.5
 e.g. means that two subscript characters count as much as one "usual"
 character towards the target B<line_length>.
 
+=item B<break_ratio>
+
+Asks the parser to break up unbalanced ratios. A ratio X/Y will be
+rewritten to 1/Y*(X) if two conditions are fulfilled. First, X has to
+contain at least one plus or minus sign. Second, X has to be longer than
+Y by at least a factor given by the value of B<break_ratio>. If the value
+is zero, nothing will be done.
+
 =back
 
 =head1 SEE ALSO
@@ -96,6 +104,15 @@ sub add{
 	    };
     return \%res;
 };
+
+#make brackets bigger
+my %bigger=(
+    '' => '\big',
+    '\big' => '\Big',
+    '\Big' => '\bigg',
+    '\bigg' => '\Bigg',
+    '\Bigg' => '\Bigg'
+    );
 %}
 
 %token BEGMATRIX	#begin matrix environment
@@ -152,10 +169,43 @@ term: ANY				{
 					\%hash
       	     	     			}
       |  FRAC '{' arg '}' '{' arg '}'	{
-      	      	      	      	  	my %hash;
-					$hash{length}=($_[3]->{length}>$_[6]->{length})?$_[3]->{length}:$_[6]->{length};
-					$hash{string}="$_[1]$_[2]$_[3]->{string}$_[4]$_[5]$_[6]->{string}$_[7]";
-					\%hash
+                                        #from mathtotex:
+                                        # if the ratio is grossly unbalanced (i.e. length of numerator >> length of denominator)
+                                        # and the numerator is composite (i.e. contains a + or -)
+                                        # translate into \frac{1}{D}N instead of \frac{N}{D}
+                                        if(
+					    defined $_[0]->{break_ratio}
+					    && $_[0]->{break_ratio}
+					    && ($_[3]->{length} > $_[0]->{break_ratio} * $_[6]->{length})
+					    && ($_[3]->{string} =~ /[\+\-]/)
+                                        ){
+                                            #determine the size of the brackets to be inserted
+                                            my ($obracket,$cbracket);
+					    ($obracket,$cbracket) = ("(",")");
+					    given($_[0]->{bracket_scaling}){
+                                                when(/^auto/){ ($obracket,$cbracket) = ("\\left(","\\right)") }
+						when(/^inc/){
+						    #look for size of first bracket in numerator and make new brackets bigger
+						    if( $_[3]->{string} =~ /(\\[bB]igg?|)\(/ ){
+							map {$_=$bigger{$1}.$_} ($obracket,$cbracket);
+						        }
+						    }
+					        };
+					    $_[0]->YYData->{INPUT}="$_[1]$_[2]1$_[4]$_[5]$_[6]->{string}$_[7]"
+						                   ."\\*$obracket$_[3]->{string}$cbracket"
+								   .$_[0]->YYData->{INPUT};
+					    return {
+						length => 0,
+						string => ""
+					        };
+                                            }
+                                        else {
+                                            # "ordinary" ratio
+      	      	      	      	  	    return {
+						length => ($_[3]->{length}>$_[6]->{length})?$_[3]->{length}:$_[6]->{length},
+						string => "$_[1]$_[2]$_[3]->{string}$_[4]$_[5]$_[6]->{string}$_[7]"
+					        };
+                                            }
       	      	      	      	  	}
       |  FRAC ANY ANY			{
       	      	      	      	  	my %hash;
@@ -261,7 +311,7 @@ sub slice {
 sub init{
     my $self=shift;
     my $args=shift;
-    foreach my $property ('subscript_size','line_length','line_break','line_break_at'){
+    foreach my $property (qw(subscript_size line_length line_break line_break_at break_ratio bracket_scaling)){
     	    $args->{$property} // die "Failed to insert line breaks: option $property not set";
     	    $self->{$property}=$args->{$property};
     }
