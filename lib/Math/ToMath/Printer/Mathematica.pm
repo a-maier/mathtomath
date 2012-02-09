@@ -2,7 +2,7 @@ package Math::ToMath::Printer::Mathematica;
 
 =head1 NAME
 
-Math::ToMath::Printer::Generic - Convert expressions to strings in Mathematica format
+Math::ToMath::Printer::Mathematica - Convert expressions to strings in Mathematica format
 
 =cut
 
