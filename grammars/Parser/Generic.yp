@@ -165,6 +165,7 @@ wildcard: symbol WILDCARD {Expression->new(name => $_[2],is => 'operator',args =
 my %description=(
     NUMBER => 'a number',
     SYMBOL => 'a symbol',
+    STRING => ' a string',
     ID => "'==='",
     NE => "'!='",
     GE => "'>='",
