@@ -34,6 +34,19 @@ find({
 #use Data::Dumper;
 #warn Dumper \%grammars;
 
+# Find all printers (needed for generating the PAR archive)
+my @printer_classes;
+{
+    my $dir_hdl;
+    opendir($dir_hdl,"lib/Math/ToMath/Printer/")
+	or die "Failed to opendir lib/Math/ToMath/Printer/: $!";
+    @printer_classes = grep {s/\.pm$//} readdir $dir_hdl;
+    closedir $dir_hdl;
+    map {$_="Math::ToMath::Printer::$_"} @printer_classes;
+}
+# use Data::Dump;
+# dd @printer_classes;
+
 sub MY::postamble {
     my $self = shift;
     # this will make sure share/ gets installed
@@ -49,15 +62,26 @@ HERE
     foreach my $grammar_spec (values %grammars) {
         my $infile = $grammar_spec->{infile};
         say "Found grammar '$infile'...";
-
+	
         my $action = <<ACTION;
 	\$(MKPATH) $grammar_spec->{outdir}
 	yapp -o $grammar_spec->{outfile} $grammar_spec->{infile}
 	\$(PERLRUN) -i -pe \"s/package\\s+$grammar_spec->{basename}\\s*;/package $grammar_spec->{classname};/\" $grammar_spec->{outfile}
 ACTION
-        $make_code .= $action;
+       $make_code .= $action;
     }
-    $make_code . "\n";
+
+    #target for par archive
+    $make_code .= << "PAR_CODE";
+
+mathtomath: pure_all
+\tpp -o mathtomath bin/mathtomath \\
+PAR_CODE
+    
+    my @parser_classes = map { $grammars{$_}->{classname} } (keys %grammars);
+    $make_code .= 
+	join " " => (map {"-M \"$_\""} (@parser_classes,@printer_classes));
+    
     return $make_code;
 }
 
