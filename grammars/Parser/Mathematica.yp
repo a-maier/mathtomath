@@ -68,7 +68,8 @@ and other Math::ToMath::Parser:: packages
 %token SYMBOL
 %token STRING
 
-%right FBOX ';'	#FBOX is \`
+%right FBOX	#FBOX is \`
+%left ';'
 %left PUT 	# >>  >>>
 #%right FUN TUNSET UNSET TSETDEL TSET UPSETDEL UPSET SETDEL SET 
 %right SET # =. ^:= ^= := = 

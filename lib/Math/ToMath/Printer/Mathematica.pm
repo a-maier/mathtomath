@@ -96,8 +96,8 @@ sub init{
 # which operators exist, which token(s) are to be used for output, precedence, pre/in/postfix...
 # brackets should also be included here to indicate that they are legal
     %{$self->{operators}}=(
-	';'	=> Operator->new(name => ';',prec => 0,assoc =>'right',pos => 'postfix'),
 	'\`'	=> Operator->new(name => '\`',prec => 0,assoc =>'right',pos => 'postfix'),
+	';'	=> Operator->new(name => ';',prec => 50,assoc =>'left',pos => 'postfix'),
 	'>>'	=> Operator->new(name => '>>',prec => 100,assoc =>'left'),
 	'>>>'	=> Operator->new(name => '>>>',prec => 100,assoc =>'left'),
 	','	=> Operator->new(name => ',',prec => 100,assoc =>'left'),
