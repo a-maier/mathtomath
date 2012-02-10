@@ -106,13 +106,15 @@ sub add{
 };
 
 #make brackets bigger
-my %bigger=(
-    '' => '\big',
-    '\big' => '\Big',
-    '\Big' => '\bigg',
-    '\bigg' => '\Bigg',
-    '\Bigg' => '\Bigg'
-    );
+my @bracket_size_modifier=('','\big','\Big','\bigg','\Bigg');
+my %bracket_level=(
+   '' => 0,
+   '\big' => 1,
+   '\Big' => 2,
+   '\bigg' => 3,
+   '\Bigg' => 4
+);
+
 %}
 
 %token BEGMATRIX	#begin matrix environment
@@ -185,9 +187,16 @@ term: ANY				{
 					    given($_[0]->{bracket_scaling}){
                                                 when(/^auto/){ ($obracket,$cbracket) = ("\\left(","\\right)") }
 						when(/^inc/){
-						    #look for size of first bracket in numerator and make new brackets bigger
-						    if( $_[3]->{string} =~ /(\\[bB]igg?|)\(/ ){
-							map {$_=$bigger{$1}.$_} ($obracket,$cbracket);
+						    #look for size of largest bracket in numerator and make new brackets bigger
+						    if( my @brackets = ($_[3]->{string} =~ /(?:\\[bB]igg?|)\(/g ) ){
+						        chop @brackets;
+							dd @brackets;
+                                                        my $new_bracket_lvl = $bracket_level{(
+							   sort { $bracket_level{$b} <=> $bracket_level{$a} }
+ 							   @brackets
+							   )[0]};
+							++$new_bracket_lvl if $new_bracket_lvl < $#bracket_size_modifier;
+							map {$_=$bracket_size_modifier[$new_bracket_lvl].$_} ($obracket,$cbracket);
 						        }
 						    }
 					        };
@@ -315,6 +324,7 @@ sub init{
     	    $args->{$property} // die "Failed to insert line breaks: option $property not set";
     	    $self->{$property}=$args->{$property};
     }
+    $self->{line_break_at}= qr/$self->{line_break_at}/;
 }
 =head1 AUTHOR
 
