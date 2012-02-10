@@ -87,7 +87,8 @@ rules are applied.
 
 =item B<symbols_as_text>
 
-If set to non-zero, all variable names are converted to C<\text{>I<name>C<}>.
+If set to non-zero, all variable names containing more than one
+character are converted to C<\text{>I<name>C<}>.
 
 By default this option is turned off.
 
@@ -130,7 +131,7 @@ The value should be a regular expression stating before which characters line
 breaks may be inserted as soon as the number of characters given by the 
 B<line_length> option is exceeded. 
 
-The default value is C<[\+\-]>, which means
+The default value is C<qr/[\+\-]/>, which means
 that line breaks may be inserted before plus and minus signs.
 
 =item B<line_break>
@@ -186,7 +187,7 @@ sub init{
 	subscript_size => "0.6",
 	line_length => "40",
 	line_break => "\\\\\n&",
-	line_break_at => "[\+\-]",
+	line_break_at => qr/[\+\-]/,
 	break_ratio => "5"
     }
 }
@@ -202,7 +203,11 @@ sub symbol_to_string{
     my $self=shift;
     my $string=shift;
     my %tree_info=@_;
-    $string='\text{'.$string.'}' if ($self->{options}->{symbols_as_text});
+    if ($self->{options}->{symbols_as_text}
+	&& (length $string > 1)
+	){
+	$string='\text{'.$string.'}';
+    }
     return ($self->replace_local($string),%tree_info);
 }
 
@@ -411,7 +416,7 @@ sub matrix_to_string{
 	    if $list_format =~ /^(array|tabular)$/;
 	$string="$begin_string\n$string\n$end_string";
 	$string='\left('.$string.'\right)' if $list_format eq 'array';
-	$string.="\n";
+	$string="\n$string\n";
     }
     #clean up
     delete $tree_info{num_columns} if $list_level % 2;
