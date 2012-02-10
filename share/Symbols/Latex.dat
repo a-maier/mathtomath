@@ -50,4 +50,5 @@
 \sin => sin,
 \cos => cos,
 \tan => tan,
-\sqrt => sqrt
+\sqrt => sqrt,
+e => e
