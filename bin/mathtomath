@@ -166,6 +166,10 @@ foreach my $out_format (@out_formats){
 }
 
 if(!defined $expression){
+    #give a hint if we're reading from a terminal
+    if( !@ARGV && -t ){
+	say "Please enter an expression (finish with <Enter><Ctrl-d>):";
+    }
     local $/=undef;
     $expression=<>;
 }

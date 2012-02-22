@@ -2,7 +2,6 @@
 - fix rules: using eval is evil
 - design consistent and comprehensive list of internal operators
 - delete comments when parsing expressions
-- input hinting (please enter ...)
 - Latex option for different alignments after line breaks
 - implement strict option
 - (add more formats: perl, c, fortran)
