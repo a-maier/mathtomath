@@ -10,15 +10,15 @@ B<mathtomath> [options] [input files]
 
 =head1 DESCRIPTION
 
-I<mathtomath> reads mathematical expressions from the input files
+B<mathtomath> reads mathematical expressions from the input files
 (or from STDIN if no files are specified) and displays the
 corresponding expressions in one or more custom formats. 
 
 Usually you will want to specify at least one output format
-with the I<L</-outformat>> option - if you don't a default
+with the B<L</-outformat>> option - if you don't a default
 output format will be chosen. It is also recommended (although
 not mandatory) to specify the format of the input expressions
-with the I<L</-informat>> option.
+with the B<L</-informat>> option.
 
 =cut
 
@@ -58,7 +58,7 @@ my %cl_global_rules;
 
 =item B<-?>, B<-help>        
 
-Display a short help message and exit
+Display a help message and exit
 
 =item B<-expression>, B<-e> I<expression> 
 
@@ -71,7 +71,7 @@ Specify the format of the input expressions. The currently supported
 formats are B<FORM>, B<LaTeX>, B<Mathematica> and a default format
 (B<generic>). Format names are case-insensitive. If no input format is
 specified, B<mathtomath> will try all available formats in a random
-order. This can lead to ambiguities. (have a look at the L</EXAMPLES>)
+order. This can lead to ambiguities (have a look at the L</EXAMPLES> section).
 
 =item B<-outformat>, B<-of> I<outformat1[,outformat2,...]> 
 
@@ -82,9 +82,13 @@ B<FORM>, B<LaTeX>, B<Mathematica> and a default format
 
 =item B<-o>, B<-options> I<option1=value1[,option2=value2,...]>
 
-Specify options for the formatting of the output. The
-supported options depend on the chosen output formats. See
-the manual B<TODO:Link> for more details
+Specify options for the formatting of the output. The supported options
+depend on the chosen output formats. See B<mathtomath-I<format>-options>
+for a list of all options and their default values for a specific format.
+
+Option values can also be changed permanently in the configuration files
+.mathtomath/I<format>/global_rules, where .mathtomath should be in your
+home directory.
 
 =item B<-quiet>
 
@@ -95,7 +99,13 @@ Suppress output messages.
 Apply replacement rules to the output. Each occurrence of I<before> will
 be replaced by I<after>. The replacement uses regular expressions. If
 you are not familiar with those (or their perl variant) you may want to
-consult the perl regular expressions tutorial L<perlretut>.
+consult the L<perl regular expressions tutorial|perlretut>. 
+
+You can define permanent replacement rules for a specific format in the
+file .mathtomath/I<format>/global_rules, where .mathtomath should be in
+your home directory.
+
+=begin comment
 
 =item B<-strict>
 
@@ -103,13 +113,15 @@ B<TODO> Fail if there are ambiguities in the conversion. This
 is actually quite common and without this option I<mathtomath>
 will still try do construct a somewhat sensible output expression.
 
+=end comment
+
 =item B<-verbose>
 
 Explain what is happening.
 
 =item B<-version>
 
-Display version number and exits
+Display version number and exit.
 
 =back
 
@@ -167,7 +179,7 @@ foreach my $out_format (@out_formats){
 
 if(!defined $expression){
     #give a hint if we're reading from a terminal
-    if( !@ARGV && -t ){
+    if( !@ARGV && !$quiet && -t){
 	say "Please enter an expression (finish with <Enter><Ctrl-d>):";
     }
     local $/=undef;
@@ -270,7 +282,7 @@ sub gen_printer{
 
 =head1 EXAMPLES
 
-Convert the formula for the area of a square from B<Mathematica> convention
+Convert the formula for the area of a circle from B<Mathematica> convention
 to B<LaTeX>:
 
   mathtomath -if Mathematica -of LaTeX -e 'Pi*r^2'  # gives \pi\*r^2
@@ -297,19 +309,44 @@ I like pi:
 
 =back
 
+=begin comment
+
 =head1 BUGS
 
 Too many to list. Please report bugs to B<TODO>.
 
+=end comment
+
 =head1 SEE ALSO
 
-B<TODO> manual, format modules, github, cpan
+=over 2
 
-L<https://github.com/a-maier/mathtomath>
+=item L<mathtomath-generic-options>
+
+=item L<mathtomath-FORM-options>
+
+=item L<mathtomath-Mathematica-options>
+
+=item L<mathtomath-LaTeX-options>
+
+=item L<Math::ToMath>
+
+=item L<The github repository|https://github.com/a-maier/mathtomath>
+
+=back
 
 =head1 AUTHOR
 
-B<TODO> we
+Andreas Maier, E<lt>email@addressE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2010-2011 by Andreas Maier
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.1 or,
+at your option, any later version of Perl 5 you may have available.
+
 
 =cut
 
