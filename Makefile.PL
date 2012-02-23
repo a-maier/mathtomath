@@ -38,8 +38,10 @@ find({
 my @printer_classes;
 {
     my $dir_hdl;
-    opendir($dir_hdl,"lib/Math/ToMath/Printer/")
-	or die "Failed to opendir lib/Math/ToMath/Printer/: $!";
+    opendir($dir_hdl,File::Spec->catdir(qw(lib Math ToMath Printer)))
+	or die "Failed to opendir ",
+	File::Spec->catdir(qw(lib Math ToMath Printer))
+	,": $!";
     @printer_classes = grep {s/\.pm$//} readdir $dir_hdl;
     closedir $dir_hdl;
     map {$_="Math::ToMath::Printer::$_"} @printer_classes;
