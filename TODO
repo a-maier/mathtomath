@@ -1,4 +1,3 @@
-- more automated tests (rules, options) 
 - fix rules: using eval is evil
 - design consistent and comprehensive list of internal operators
 - delete comments when parsing expressions
