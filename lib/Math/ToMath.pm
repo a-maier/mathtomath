@@ -51,7 +51,7 @@ The following export tag will export all exportable shortcuts and functions:
 
 =head1 SEE ALSO
 
-mathtomath
+L<mathtomath>
 
 =head1 AUTHOR
 
