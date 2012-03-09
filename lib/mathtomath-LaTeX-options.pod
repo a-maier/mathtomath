@@ -1,0 +1,99 @@
+=head1 NAME
+
+mathtomath-generic-options - mathtomath output options for LaTeX
+
+=head1 DESCRIPTION
+
+Output options change the way expressions in the corresponding format
+are printed. The default option values are read from
+.mathtomath/I<Format>/options in your home directory. The defaults can
+be overridden by using mathtomath's B<-o> command line switch. The
+syntax for assigning a value to an option is C<option name = value>. Multiple assignments can be separated by semicolons.
+
+=over 2
+
+=item B<symbols_as_text>
+
+If set to non-zero, all variable names containing more than one
+character are converted to C<\text{>I<name>C<}>.
+
+By default this option is turned off.
+
+=item B<list_format>
+
+Determines the output format for lists. Supported formats are 
+C<tabular, array> and the various matrix environments defined by the amsmath 
+LaTeX package. 
+
+The default is zero, which means that lists have the form
+C<\{...\}>.
+
+=item B<bracket_scaling>
+
+Changes how brackets are scaled. If this option is set to a zero value 
+brackets are left as they are. C<auto> means that brackets are preceded by 
+C<\left> and C<\right>. C<incremental> is most useful for nested brackets: the 
+innermost bracket pair is in general left unchanged, whereas the following
+levels are enlarged with C<\big> and the like. Up to five levels are supported.
+Brackets around ratio will always be at least C<\bigg>.
+
+The default value for this option is C<incremental>.
+
+=item B<line_length>
+
+The minimal number of characters in a line. When a line is long enough a
+line break will be inserted directly before the next match of the
+regular expression given by B<line_break_at>. If ratios appear in the
+line, only the number of characters in either the numerator or the
+denominator is counted, depending on which is longer. For matrices or
+tables only the longest row counts. Subscript or superscript characters
+are usually not counted as whole characters (see B<subscript_size>).
+
+A zero value means that no line breaks will be inserted. The default value is 
+40.
+
+=item B<line_break_at>
+
+The value should be a regular expression stating before which characters line
+breaks may be inserted as soon as the number of characters given by the 
+B<line_length> option is exceeded. 
+
+The default value is C<qr/[\+\-]/>, which means
+that line breaks may be inserted before plus and minus signs.
+
+=item B<line_break>
+
+Defines how a line break looks like.
+
+By default a line break is two backslashes followed by a newline and the 
+alignment character C<&>.
+
+=item B<subscript_size>
+
+How much subscript/superscript characters count. A value of 0.5
+e.g. means that two subscript characters count as much as one "usual"
+character towards the target B<line_length>.
+
+=item B<break_ratio>
+
+Unbalanced ratios X/Y will be rewritten to 1/Y*(X) if two conditions are
+fulfilled. First, X has to contain at least one plus or minus
+sign. Second, X has to be longer than Y by at least a factor given by
+the value of B<break_ratio>. If the value is zero, nothing will be done.
+
+The default is to break up ratios where the numerator is longer by at 
+least a factor of 5.
+
+=back
+
+=head1 FILES
+
+B<.mathtomath/Latex/options> - file containing default option values
+
+=head1 SEE ALSO
+
+L<mathtomath>
+
+=cut
+
+

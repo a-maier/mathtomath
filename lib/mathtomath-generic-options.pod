@@ -1,0 +1,33 @@
+=head1 NAME
+
+mathtomath-generic-options - mathtomath output options for generic format
+
+=head1 DESCRIPTION
+
+Output options change the way expressions in the corresponding format
+are printed. The default option values are read from
+.mathtomath/I<Format>/options in your home directory. The defaults can
+be overridden by using mathtomath's B<-o> command line switch. The
+syntax for assigning a value to an option is C<option name = value>. Multiple assignments can be separated by semicolons.
+
+=over
+
+=item B<line_length>
+
+States the maximum allowed number of characters in a line. Longer lines
+are broken up by inserting line breaks and the C<\> continuation
+character. A value of 0 means that lines may become arbitrarily long.
+
+=back
+
+=head1 FILES
+
+B<.mathtomath/Generic/options> - file containing default option values
+
+=head1 SEE ALSO
+
+L<mathtomath>
+
+=cut
+
+
