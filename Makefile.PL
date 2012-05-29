@@ -101,6 +101,7 @@ WriteMakefile(
     PREREQ_PM         => {
       'Data::Dump'        => '0',
       'Getopt::Long'      => '0',
+      'IO::Interactive'   => '0',
       'Module::Pluggable' => '0',
       'Parse::Yapp'       => '0',
       'File::Spec'        => '0',
