@@ -68,6 +68,7 @@ and other Math::ToMath::Parser:: packages
 %token CMD
 %token CBO # \{
 %token CBC # \}
+%token SQRT
 
 %nonassoc OVER
 %left ','
@@ -170,6 +171,10 @@ function:	symbol '(' term ')'		{
     	   					Expression->new(name =>['(',')'],is => 'bracket',args => [$sym,$_[3]])
 						}
 		| cmd '(' term ')'		{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
+		| SQRT argument                 {
+		       				my $sqrt=Expression->new(name =>'**sqrt**',is => 'symbol');
+		       				Expression->new(name =>['(',')'],is => 'bracket',args => [$sqrt,$_[2]])
+						}
 #  also support currying
 	  	| function '(' term ')' 	{Expression->new(name =>['(',')'],is => 'bracket',args => [$_[1],$_[3]])}
 ;
@@ -214,6 +219,7 @@ my %description=(
     GE => "'\\geq'",
     LE => "'\\leq'",
     FRAC => "'\\frac'",
+    SQRT => "'\\sqrt'",
     );
 
 my $cache_size=4;
@@ -288,6 +294,7 @@ sub _lexer {
 	elsif(s/^([[:alpha:]])//)          {($type,$token)=('ALPHA',$1) }
 	elsif(s/^(\\(d|t)?frac)//)         {($type,$token)=('FRAC',$1) }
 	elsif(s/^(\\over)//)               {($type,$token)=('OVER',$1) }
+	elsif(s/^(\\sqrt)//)               {($type,$token)=('SQRT',$1) }       
 	elsif(s/^(\*|\\?(\*|times|cdot))//){($type,$token)=('MULTI',$1) }
 	elsif(s/^(\\geq)//)                {($type,$token)=('GE',$1) }
 	elsif(s/^(\\leq)//)                {($type,$token)=('LE',$1) }
