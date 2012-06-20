@@ -9,7 +9,7 @@ for my $parser_class (@parsers){
     my $format = ($parser_class =~ /::(\w+)$/);
     can_ok($parser_class,qw(new parse));
     my $parser=$parser_class->new();
-    for my $expression qw(0 1 x){
+    for my $expression (qw(0 1 x)){
 	ok($parser->parse($expression),"$format parser parses expression $expression")
     }
 }
