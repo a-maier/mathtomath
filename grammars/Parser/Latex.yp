@@ -18,7 +18,7 @@ sub to_symbol{
     my $symbol=shift;
     #special characters
     if(defined $special_symbols{$symbol}){
-	$symbol="**$special_symbols{$symbol}**";		
+	$symbol="**$special_symbols{$symbol}**";
     }
     return Expression->new(name =>$symbol,is => 'symbol')
 };
@@ -84,7 +84,7 @@ and other Math::ToMath::Parser:: packages
 %%
 
 input: /* empty */
-       | term	
+       | term
 ;
 
 term:	number {Expression->new(name =>$_[1],is => 'number')}
@@ -117,7 +117,7 @@ atom: DIGIT {Expression->new(name =>$_[1],is => 'number')}
 ;
 
 
-argument: atom 
+argument: atom
 	  | '{' term '}' {$_[2]}
 ;
 
@@ -128,7 +128,7 @@ operation: FRAC argument argument	{Expression->new(name =>'/',is => 'operator',a
 	   | term MULTI term  		{Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[3]])}
 	   | '+' term			{$_[2]}
 	   | term '+' term 		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
-	   | '-' term			{Expression->new(name =>$_[1],is => 'operator',args => [$_[2]])}
+	   | '-' term			{Expression->new(name =>'u-',is => 'operator',args => [$_[2]])}
 	   | term '-' term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 	   | term '^' argument		{Expression->new(name =>'^',is => 'operator',args => [$_[1],$_[3]])}
 	   | term '_' argument		{
@@ -137,23 +137,23 @@ operation: FRAC argument argument	{Expression->new(name =>'/',is => 'operator',a
 	     	      			Expression->new(name => ['(',')'],is => 'bracket',args => [$sym,$args])
 					}
 	   |  number bracket %prec MULTI	{
-	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
-	      	     	     	   		Expression->new(name =>'*',is => 'operator',args => [$num,$_[2]])} 
+	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number');
+	      	     	     	   		Expression->new(name =>'*',is => 'operator',args => [$num,$_[2]])}
 	   |  number symbol %prec MULTI 	{
-	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
+	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number');
 	      	     	    	  		my $sym=to_symbol($_[2]);
 	      	     	    	  		Expression->new(name =>'*',is => 'operator',args => [$num,$sym])
-						} 
+						}
 	   |  number cmd %prec MULTI 		{
-	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
+	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number');
 						Expression->new(name =>'*',is => 'operator',args => [$num,$_[2]])
-						} 
+						}
 	   |  number function %prec MULTI 	{
-	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number'); 
+	      	     	     	   		my $num=Expression->new(name =>$_[1],is => 'number');
 						Expression->new(name =>'*',is => 'operator',args => [$num,$_[2]])
-						} 
-	   | sequence	      	    		{$_[1]->{name}=';';$_[1]} 
-# 	   | term '.' term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])} 
+						}
+	   | sequence	      	    		{$_[1]->{name}=';';$_[1]}
+# 	   | term '.' term		{Expression->new(name =>$_[2],is => 'operator',args => [$_[1],$_[3]])}
 #	   | term term %prec MULTI  {Expression->new(name =>'*',is => 'operator',args => [$_[1],$_[2]])}
 ;
 
@@ -260,7 +260,7 @@ sub _error {
 	for my $bracket (keys %{$parser->{bracket_level}}){
 	    if($parser->{bracket_level}->{$bracket}>0){
 		$parser->{error_desc} .="unmatched opening bracket '$bracket'\n";
-		$parser->{error_desc} .= "   HERE>>$parser->{bracket_cache}->{$bracket}<<HERE\n" 
+		$parser->{error_desc} .= "   HERE>>$parser->{bracket_cache}->{$bracket}<<HERE\n"
 		    if $parser->{bracket_cache}->{$bracket};
 	    }
 	}
@@ -281,7 +281,7 @@ sub _error {
 sub _lexer {
     state $in_matrix_env=0;
     my $parser =shift;
-    
+
     return('',undef) if $parser->YYData->{INPUT} eq '';
     my ($type,$token);
     for ($parser->YYData->{INPUT}) {
@@ -290,11 +290,11 @@ sub _lexer {
 	unless($in_matrix_env){
 	    s/^(&|\\\\)+// and $parser->{cache}.=$1;
 	}
-	if(s/^(\d)//)                      {($type,$token)=('DIGIT',$1) } 
+	if(s/^(\d)//)                      {($type,$token)=('DIGIT',$1) }
 	elsif(s/^([[:alpha:]])//)          {($type,$token)=('ALPHA',$1) }
 	elsif(s/^(\\(d|t)?frac)//)         {($type,$token)=('FRAC',$1) }
 	elsif(s/^(\\over)//)               {($type,$token)=('OVER',$1) }
-	elsif(s/^(\\sqrt)//)               {($type,$token)=('SQRT',$1) }       
+	elsif(s/^(\\sqrt)//)               {($type,$token)=('SQRT',$1) }
 	elsif(s/^(\*|\\?(\*|times|cdot))//){($type,$token)=('MULTI',$1) }
 	elsif(s/^(\\geq)//)                {($type,$token)=('GE',$1) }
 	elsif(s/^(\\leq)//)                {($type,$token)=('LE',$1) }
@@ -323,7 +323,7 @@ sub _lexer {
 	}
 	elsif(s/^(\\begin\{(array|tabular|(p|b|B|v|V|small)?matrix)\}(\{[lcr]*\})?)//){
 	    ++$in_matrix_env;
-	    ($type,$token)=('BEGMATRIX',$1) 
+	    ($type,$token)=('BEGMATRIX',$1)
 	}
 	elsif(s/^(\\end\{(array|tabular|(p|b|B|v|V|small)?matrix)\})//){
 	    --$in_matrix_env>-1 or die "$1 closes unopened matrix environment";
