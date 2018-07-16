@@ -108,6 +108,7 @@ WriteMakefile(
       'File::ShareDir'    => '0',
       'Pod::Usage'        => '0',
       'Math::BigFloat'    => '0',
+      'File::HomeDir'     => '0',
       'parent'            => '0',
     }, # e.g., Module::Name => 1.1
     'EXE_FILES'   => [qw( bin/mathtomath )],
