@@ -46,7 +46,7 @@ use parent 'Math::ToMath::Printer';
 
 =head1 DESCRIPTION
 
-Printer objects of this class can be used to convert 
+Printer objects of this class can be used to convert
 L<Math::ToMath::Expression> objects into strings that can be fed into LaTeX.
 
 =over 2
@@ -67,7 +67,7 @@ this manual for a complete list.
 =item B<local_rules>
 
 Set local transformation rules. Transformation rules have the form LHS => RHS
-and act like regular expression substitution, i.e. s/LHS/RHS/. Local rules 
+and act like regular expression substitution, i.e. s/LHS/RHS/. Local rules
 are applied separately to each subexpression. This allows a limited form of
 "semantic" replacements as shown in the example.
 
@@ -75,8 +75,8 @@ are applied separately to each subexpression. This allows a limited form of
 
 Set global transformation rules. Transformation rules have the form LHS => RHS
 and act like regular expression substitution, i.e. s/LHS/RHS/. Global rules are
-applied by the B<convert> method to the whole resulting string. If the 
-I<line_length> option is set line breaks will be inserted B<after> global 
+applied by the B<convert> method to the whole resulting string. If the
+I<line_length> option is set line breaks will be inserted B<after> global
 rules are applied.
 
 =back
@@ -94,18 +94,18 @@ By default this option is turned off.
 
 =item B<list_format>
 
-Determines the output format for lists. Supported formats are 
-C<tabular, array> and the various matrix environments defined by the amsmath 
-LaTeX package. 
+Determines the output format for lists. Supported formats are
+C<tabular, array> and the various matrix environments defined by the amsmath
+LaTeX package.
 
 The default is zero, which means that lists have the form
 C<\{...\}>.
 
 =item B<bracket_scaling>
 
-Changes how brackets are scaled. If this option is set to a zero value 
-brackets are left as they are. C<auto> means that brackets are preceded by 
-C<\left> and C<\right>. C<incremental> is most useful for nested brackets: the 
+Changes how brackets are scaled. If this option is set to a zero value
+brackets are left as they are. C<auto> means that brackets are preceded by
+C<\left> and C<\right>. C<incremental> is most useful for nested brackets: the
 innermost bracket pair is in general left unchanged, whereas the following
 levels are enlarged with C<\big> and the like. Up to five levels are supported.
 Brackets around ratio will always be at least C<\bigg>.
@@ -122,14 +122,14 @@ denominator is counted, depending on which is longer. For matrices or
 tables only the longest row counts. Subscript or superscript characters
 are usually not counted as whole characters (see B<subscript_size>).
 
-A zero value means that no line breaks will be inserted. The default value is 
+A zero value means that no line breaks will be inserted. The default value is
 40.
 
 =item B<line_break_at>
 
 The value should be a regular expression stating before which characters line
-breaks may be inserted as soon as the number of characters given by the 
-B<line_length> option is exceeded. 
+breaks may be inserted as soon as the number of characters given by the
+B<line_length> option is exceeded.
 
 The default value is C<qr/[\+\-]/>, which means
 that line breaks may be inserted before plus and minus signs.
@@ -138,7 +138,7 @@ that line breaks may be inserted before plus and minus signs.
 
 Defines how a line break looks like.
 
-By default a line break is two backslashes followed by a newline and the 
+By default a line break is two backslashes followed by a newline and the
 alignment character C<&>.
 
 =item B<subscript_size>
@@ -154,7 +154,7 @@ fulfilled. First, X has to contain at least one plus or minus
 sign. Second, X has to be longer than Y by at least a factor given by
 the value of B<break_ratio>. If the value is zero, nothing will be done.
 
-The default is to break up ratios where the numerator is longer by at 
+The default is to break up ratios where the numerator is longer by at
 least a factor of 5.
 
 =back
@@ -239,7 +239,7 @@ sub bracket_to_string{
     }
 
     #check for non-standard list format
-    if( 
+    if(
 	$$brackets[0] eq '\{'
 	and $$brackets[1] eq '\}'
 	and defined $self->{options}->{list_format}
@@ -249,14 +249,14 @@ sub bracket_to_string{
 	#print 'bracket_to_string: ';dd %tree_info;
 	return $self->matrix_to_string($$args[0],%tree_info)
     }
-    
+
     ($string_arg,%tree_info)=$self->to_string($$args[0],%tree_info);
 
     #treat bracket scaling
     if(defined $self->{options}->{bracket_scaling}){
 	given($self->{options}->{bracket_scaling}){
 	    when(/^auto/){$$brackets[0]='\left'.$$brackets[0];$$brackets[1]='\right'.$$brackets[1]}
-	    #incremental bracket scaling: 
+	    #incremental bracket scaling:
 	    # make this bracket one unit larger than the largest bracket in the argument
 	    when(/^inc/){
 		if(defined $tree_info{last_bracket_size}){
@@ -316,7 +316,7 @@ sub product{
     ($string_left,%tree_info_left)=$self->to_string($$args[0],%tree_info);
     ($string_right,%tree_info_right)=$self->to_string($$args[1],%tree_info);
     %tree_info=$self->merge_info(\%tree_info_left,\%tree_info_right);
-    
+
     #TODO: it would be wise to use operator_to_string here, but first these operators have to be defined
     #TODO: the following check is not sufficient
     $string=$string_left
@@ -347,7 +347,7 @@ sub power{
     $tree_info{last_op}='^';
     my $base_str;
     ($base_str,%tree_info)=$self->to_string($$args[0],%tree_info);
-    my $string= 
+    my $string=
 	$base_str
 	.$self->replace_local('^')
 	.((length $arg_str==1)?$arg_str:"{$arg_str}")
@@ -393,7 +393,7 @@ sub matrix_to_string{
     my %tree_info=@_;
     my $list_format=$self->{options}->{list_format};
     my $string='';
-    #change current list level 
+    #change current list level
     #0/undef: not inside a list
     #odd value: 'outer' list; items separated by "\\\\\n"
     #even value: 'inner' list; items separated by '&'
@@ -405,14 +405,14 @@ sub matrix_to_string{
     #print 'matrix_to_string: ';dd %tree_info;
 
     ($string,%tree_info)=$self->to_string($arg,%tree_info) if $arg;
-    
+
     if($list_level % 2){
 	my ($begin_string,$end_string);
 	#outer list: we need an environment
 	($begin_string,$end_string)=("\\begin{$list_format}","\\end{$list_format}");
 	#array and tabular environments need the number of columns
 	defined $tree_info{num_columns} or $tree_info{num_columns}=1;
-	$begin_string.='{'.('c' x $tree_info{num_columns}).'}' 
+	$begin_string.='{'.('c' x $tree_info{num_columns}).'}'
 	    if $list_format =~ /^(array|tabular)$/;
 	$string="$begin_string\n$string\n$end_string";
 	$string='\left('.$string.'\right)' if $list_format eq 'array';
@@ -436,7 +436,7 @@ sub sequence{
     #usual sequence
     return $self->operator_to_string(',',$args,%tree_info)
 	unless ($tree_info{list_level});
-    
+
     #bad luck, we are inside a matrix
     #how deep?
     my $list_level=$tree_info{list_level};
@@ -464,7 +464,7 @@ sub fall_through_bracket{
 	 ($object->is eq 'bracket')
 	 and ($object->name->[0] eq '(')
 	 and ($object->name->[1] eq ')')
-	and (scalar @{$object->args} !=2)	
+	and (scalar @{$object->args} !=2)
 	){
 	# we have an unneeded bracket, let's jump one level deeper
 	return $object->args->[0];
@@ -477,7 +477,7 @@ sub bracket_size{
     my $self=shift;
     my $size=shift;
     my $bracket=shift;
-    return 
+    return
 	(($size<scalar @bracket_size_modifier)
 	  ?$bracket_size_modifier[$size]
 	  :$bracket_size_modifier[-1]
@@ -513,12 +513,12 @@ sub merge_info{
 #insert line breaks after a certain number of characters
 sub insert_line_breaks{
     my $self=shift;
-    my $_=shift;
+    local $_=shift;
     #$_ or return $_;
     use Math::ToMath::Printer::LatexSlicer;
     my $slicer= Math::ToMath::Printer::LatexSlicer->new;
     $slicer->init($self->{options});
-    $_=$slicer->slice($_) // die "Internal error: failed to parse output string"; 
+    $_=$slicer->slice($_) // die "Internal error: failed to parse output string";
     return $_;
 }
 

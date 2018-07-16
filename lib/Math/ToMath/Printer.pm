@@ -29,10 +29,10 @@ use Scalar::Util qw(blessed);
 
 =head1 DESCRIPTION
 
-Math::ToMath::Printer provides methods to convert L<Math::ToMath::Expression> 
-objects to strings. It is intended to be used as a base class for printers 
-converting to specific formats. Therefore this manual contains rather 
-technical information; if you don't plan to write your own printer class 
+Math::ToMath::Printer provides methods to convert L<Math::ToMath::Expression>
+objects to strings. It is intended to be used as a base class for printers
+converting to specific formats. Therefore this manual contains rather
+technical information; if you don't plan to write your own printer class
 the manuals of more specific printers like L<Math::ToMath::Printer::Generic>
 might be more helpful.
 
@@ -42,7 +42,7 @@ might be more helpful.
 
 =item B<new>
 
-Construct a new object. Calls init for initialisation. No need to overwrite 
+Construct a new object. Calls init for initialisation. No need to overwrite
 this in derived classes.
 
 =cut
@@ -139,7 +139,7 @@ sub init{
 
 =item B<options>
 
-If there are arguments, set options according to them. 
+If there are arguments, set options according to them.
 Return a hash with the options and their values.
 
 =cut
@@ -154,8 +154,8 @@ sub options{
 
 =item B<local_rules>
 
-If there are arguments, set local rules according to them. 
-Return a hash with the local rules and their values. 
+If there are arguments, set local rules according to them.
+Return a hash with the local rules and their values.
 Rules have the form LHS => RHS and act like s/LHS/RHS/;
 Local rules are applied separately to each node of the expression tree.
 
@@ -170,10 +170,10 @@ sub local_rules{
 
 =item B<global_rules>
 
-If there are arguments, set global rules according to them. 
-Return a hash with the global rules and their values. 
+If there are arguments, set global rules according to them.
+Return a hash with the global rules and their values.
 Rules have the form LHS => RHS and act like s/LHS/RHS/;
-Global rules are applied to the (almost final) output string. Only line 
+Global rules are applied to the (almost final) output string. Only line
 breaks are inserted afterwards, and only if a corresponding option is set
 
 =cut
@@ -187,7 +187,7 @@ sub global_rules{
 
 =item B<operator_by_name>
 
-Small convenience routine which returns the Math::ToMath::operator definition 
+Small convenience routine which returns the Math::ToMath::operator definition
 for the operator with the given name. If two arguments are given, redefines
 the operator with the name corresponding to the first argument.
 
@@ -202,8 +202,8 @@ sub operator_by_name{
 
 =item B<symbol_by_name>
 
-For a given special symbol gets the string representation of this symbol in 
-the current format. In the two-argument form sets the representation to the 
+For a given special symbol gets the string representation of this symbol in
+the current format. In the two-argument form sets the representation to the
 second argument.
 
 =cut
@@ -217,7 +217,7 @@ sub symbol_by_name{
 
 =item B<special_by_name>
 
-Takes the name of an object. If there is a special routine to treat this 
+Takes the name of an object. If there is a special routine to treat this
 object, a reference to it is returned. If two arguments are given the routine
 given as the second argument is set to treat the object with the name given by
 the first argument.
@@ -234,8 +234,8 @@ sub special_by_name{
 
 =item B<to_string>
 
-Main method. Takes an expression and returns the corresponding string, 
-but without applying global rules nor inserting line breaks. The current 
+Main method. Takes an expression and returns the corresponding string,
+but without applying global rules nor inserting line breaks. The current
 node of the expression is checked and a corresponding subroutine is called.
 
 =cut
@@ -243,7 +243,7 @@ node of the expression is checked and a corresponding subroutine is called.
 
 sub to_string{
     my $self= shift;
-    
+
     my $tree=shift;
     # say "to_string";
     #dd($tree);
@@ -252,7 +252,7 @@ sub to_string{
     # last operator
     # if the current operator has a lower precedence, we need a bracket
     defined $tree_info{last_op} or $tree_info{last_op}=0;
-    #if the current operator equals the old one, depending on the 
+    #if the current operator equals the old one, depending on the
     #associativity we might need a bracket
     # for this we need to know whether we are looking at the left argument or at the right one
     defined $tree_info{arg_num} or $tree_info{arg_num}='';
@@ -277,13 +277,13 @@ sub to_string{
 	}
 	when('operator') {
 	    #check whether the operator exists in this format
-	    defined $self->operator_by_name($tree->name) 
+	    defined $self->operator_by_name($tree->name)
 	    or die "Operator '".$tree->name."' does not exist in format $self->{format}";
 	    ($string,%tree_info) =$self->operator_to_string($tree->name,$tree->args,%tree_info);
 	}
 	when('bracket') {
 	    for my $i (0..1){
-		defined $self->operator_by_name($tree->name->[$i]) 
+		defined $self->operator_by_name($tree->name->[$i])
 		or die "Bracket '".$tree->name->[$i]."'does not exist in format $self->{format}";
 	    }
 	    my $brackets;
@@ -299,10 +299,10 @@ sub to_string{
 
 =item B<symbol_to_string>
 
-Takes a symbol and returns the corresponding string in the current format. 
-There are two possibilities if the symbol's name is not valid in the 
-current format. If the I<strict> option set an invalid symbol name should be 
-a fatal error. If this option is not set symbol_to_string tries to construct 
+Takes a symbol and returns the corresponding string in the current format.
+There are two possibilities if the symbol's name is not valid in the
+current format. If the I<strict> option set an invalid symbol name should be
+a fatal error. If this option is not set symbol_to_string tries to construct
 a similar, but valid symbol name (e.g. by removing illegal characters)
 
 =cut
@@ -311,7 +311,7 @@ a similar, but valid symbol name (e.g. by removing illegal characters)
 # TODO: or die on error if strict is set
 sub symbol_to_string{
     my $self=shift;
-    my $_=$_[0];
+    local $_=$_[0];
     $_=$self->replace_local($_);
     #delete illegal tokens
     s/^[[:^alpha:]]+//;
@@ -322,16 +322,16 @@ sub symbol_to_string{
 
 =item B<number_to_string>
 
-Takes a number and returns the corresponding string in the current format. 
+Takes a number and returns the corresponding string in the current format.
 
 =cut
 
 sub number_to_string{
     my $self=shift;
-    my $_=$_[0];
+    local $_=$_[0];
     $_=$self->replace_local($_);
     s/[^\d\.]//g;
-    /^(\d+|\d*\.\d+|\d+\.\d*)$/ 
+    /^(\d+|\d*\.\d+|\d+\.\d*)$/
 	or die "Number '$_[0]' can't be converted into the format $self->{format}";
     $_=$1;
     if(/^\./){$_='0'.$_}
@@ -341,22 +341,22 @@ sub number_to_string{
 
 =item B<string_to_string>
 
-Takes a string (in the sense of Math::ToMath::Expression) and returns the 
+Takes a string (in the sense of Math::ToMath::Expression) and returns the
 corresponding string (in the sense of perl) in the current format.
 
 =cut
 
 sub string_to_string{
     my $self=shift;
-    my $_=$self->replace_local($_[0]);
+    local $_=$self->replace_local($_[0]);
     return ("\"$_\"");
 }
 
 
 =item B<operator_to_string>
 
-Takes an operator and its operands and returns the corresponding string in 
-the current format. Depending on the type of the operator 
+Takes an operator and its operands and returns the corresponding string in
+the current format. Depending on the type of the operator
 (prefix, postfix, infix) an appropriate helper routine is called. Also takes
 care of additional brackets that might have to be inserted depending on
 operator precedence or associativity.
@@ -383,7 +383,7 @@ sub operator_to_string{
 	}
 	else{
 	    die "Failed to format ".$operator->pos." operator '".$operator->name."' with one argument"
-	} 
+	}
     }
     else{
 	#more than one argument, has to be an infix operator
@@ -391,7 +391,7 @@ sub operator_to_string{
     }
     #check precedence
     my $last_prec=$self->operator_by_name($last_op)->prec;
-    
+
     if ($last_prec > $operator->prec) {$string='('.$string.')'}
     #check associativity - only important if the previous operator equals the current one
     elsif($op_name eq $last_op){
@@ -410,7 +410,7 @@ sub operator_to_string{
 
 =item B<prefix_operator_to_string>
 
-Takes a prefix operator and its operand and returns the corresponding string 
+Takes a prefix operator and its operand and returns the corresponding string
 in the current format. The operand is converted using B<to_string>.
 
 =cut
@@ -430,7 +430,7 @@ sub prefix_operator_to_string{
 
 =item B<postfix_operator_to_string>
 
-Takes a postfix operator and its operand and returns the corresponding string 
+Takes a postfix operator and its operand and returns the corresponding string
 in the current format. The operand is converted using B<to_string>.
 
 =cut
@@ -450,7 +450,7 @@ sub postfix_operator_to_string{
 
 =item B<infix_operator_to_string>
 
-Takes an infix operator and its operands and returns the corresponding string 
+Takes an infix operator and its operands and returns the corresponding string
 in the current format. The operands are converted using B<to_string>.
 
 =cut
@@ -477,7 +477,7 @@ sub infix_operator_to_string{
 
 =item B<bracket_to_string>
 
-Takes a bracket and its contents and returns the corresponding string 
+Takes a bracket and its contents and returns the corresponding string
 in the current format. Note that functions are considered brackets by
 L<Math::ToMath::Expression> and hence are also treated by this method.
 
@@ -520,7 +520,7 @@ sub bracket_to_string{
 
 =item B<replace_local>
 
-Applies the local replacement rules to its argument. The argument should be 
+Applies the local replacement rules to its argument. The argument should be
 the string corresponding to a single node in the L<Math::ToMath::Expression>
 expression tree. Each rule has the form LHS => RHS and is applied as
 s/LHS/RHS/
@@ -529,7 +529,7 @@ s/LHS/RHS/
 
 sub replace_local{
     my $self=shift;
-    my $_=shift;
+    local $_=shift;
     for my $pattern (keys %{$self->{rules}->{local}}){
 	#TODO: replace by something reasonable
 	eval("s/$pattern/$self->{rules}->{local}->{$pattern}/");
@@ -566,7 +566,7 @@ SCOPE: {
 
 =item B<merge_info>
 
-Some formats need to keep additional information while processing the 
+Some formats need to keep additional information while processing the
 expression tree. This method determines how to merge information coming
 form different branches.
 
@@ -598,7 +598,7 @@ and, depending on options, inserts line breaks where appropriate.
 sub convert{
     my $self=shift;
     my $expression=shift;
-    my $_=$self->to_string($expression);
+    local $_=$self->to_string($expression);
     #final formatting for output string
     for my $pattern (keys %{$self->{rules}->{global}}){
 	eval("s/$pattern/$self->{rules}->{global}->{$pattern}/g");
@@ -609,7 +609,7 @@ sub convert{
 
 =item B<insert_line_breaks>
 
-Takes a string and inserts line breaks after a certain number of characters. 
+Takes a string and inserts line breaks after a certain number of characters.
 How this is handled exactly is up to the format class.
 
 =cut
@@ -617,7 +617,7 @@ How this is handled exactly is up to the format class.
 #insert line breaks after a certain number of characters
 sub insert_line_breaks{
     my $self=shift;
-    my $_=shift;
+    local $_=shift;
     my $max_length=$self->{options}->{line_length}-1;
     # FIXME: See Text::Wrap! It's part of core perl.
     s/(.{$max_length})/$1\\\n/g;

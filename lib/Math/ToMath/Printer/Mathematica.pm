@@ -47,7 +47,7 @@ use parent 'Math::ToMath::Printer';
 
 =head1 DESCRIPTION
 
-Printer objects of this class can be used to convert 
+Printer objects of this class can be used to convert
 L<Math::ToMath::Expression> objects into strings that can be fed into the
 computer algebra system Mathematica.
 
@@ -72,7 +72,7 @@ inserting a continuation character and a line break. If this option is not set
 =item B<local_rules>
 
 Set local transformation rules. Transformation rules have the form LHS => RHS
-and act like regular expression substitution, i.e. s/LHS/RHS/. Local rules 
+and act like regular expression substitution, i.e. s/LHS/RHS/. Local rules
 are applied separately to each subexpression. This allows a limited form of
 "semantic" replacements as shown in the example.
 
@@ -80,8 +80,8 @@ are applied separately to each subexpression. This allows a limited form of
 
 Set global transformation rules. Transformation rules have the form LHS => RHS
 and act like regular expression substitution, i.e. s/LHS/RHS/. Global rules are
-applied by the B<convert> method to the whole resulting string. If the 
-I<line_length> option is set line breaks will be inserted B<after> global 
+applied by the B<convert> method to the whole resulting string. If the
+I<line_length> option is set line breaks will be inserted B<after> global
 rules are applied.
 
 =back
@@ -206,7 +206,7 @@ sub bracket_to_string{
 # TODO: or dying on error
 sub symbol_to_string{
     my $self=shift;
-    my $_=$self->replace_local($_[0]);
+    local $_=$self->replace_local($_[0]);
     #greek letters
     if(/^\*\*(.*)\*\*$/ and $self->{greek_symbols}->{$1}){
 	s/^\*\*|\*\*$//g;
